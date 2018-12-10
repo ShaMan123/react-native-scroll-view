@@ -1,0 +1,33 @@
+{
+  "name": "react-native-scroll-view",
+  "version": "1.0.0",
+  "description": "iOS ScrollView for Android",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "github.com/ShaMan123/react-native-scroll-view"
+  },
+  "keywords": [
+    "react",
+    "native",
+    "scroll",
+    "scrollview",
+    "scroll view",
+    "scroll",
+    "scrolling",
+    "android",
+    "ios",
+    "zoom",
+    "zoomable",
+    "scale",
+    "scalable"
+  ],
+  "author": "ShaMan123 (github.com/ShaMan123)",
+  "dependencies": {
+    "prop-types": "^15.6.1"
+  },
+  "peerDependencies": {
+    "react": ">=15.0.0",
+    "react-native": "*"
+  }
+}
