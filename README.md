@@ -8,11 +8,11 @@ Refer to the react-native `ScrollView` [documentation](https://facebook.github.i
 
 ## Installation
 ```
-npm install --save github:ShaMan123/react-native-scroll-view
+npm install --save @ShaMan123/react-native-scroll-view
 ```
 OR
 ```
-yarn add github:ShaMan123/react-native-scroll-view
+yarn add @ShaMan123/react-native-scroll-view
 ```
 
 ## Usage
