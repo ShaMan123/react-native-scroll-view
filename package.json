@@ -1,5 +1,5 @@
 {
-  "name": "react-native-scroll-view",
+  "name": "@shaman123/react-native-scroll-view",
   "version": "1.0.0",
   "description": "iOS ScrollView for Android",
   "main": "src/index.js",
@@ -29,5 +29,11 @@
   "peerDependencies": {
     "react": ">=15.0.0",
     "react-native": "*"
-  }
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "public-publish": "npm publish --access public"
+  },
+  "license": "ISC"
 }
