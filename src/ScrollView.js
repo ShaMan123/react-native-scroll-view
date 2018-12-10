@@ -133,7 +133,6 @@ export default class ScrollView extends Component {
 
         this._onLayout = this._onLayout.bind(this);
         this._handleRelease = this._handleRelease.bind(this);
-        this.scrollResponderZoomTo = this.scrollZoomTo.bind(this);
         this._loadPanResponder.call(this);
 
         this.style = StyleSheet.compose({
@@ -453,7 +452,7 @@ export default class ScrollView extends Component {
         this.scrollTo({ x: this.state.width, y: this.state.height, animated, callback });
     }
 
-    scrollZoomTo({ x, y, width, height, animated = true, callback = null }) {
+    scrollResponderZoomTo({ x, y, width, height, animated = true, callback = null }) {
         // zoomToRect
         const dimensions = this.state;
         const widthScale = dimensions.width / width;
