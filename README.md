@@ -1,7 +1,8 @@
 # react-native-scroll-view
-A react-native component for android that mimics iOS's `<ScrollView>`.
+A react-native component for android that mimics the react-native iOS `ScrollView`.
 
-Use for zooming and scrolling content.
+- android: **ZOOM and SCROLL** content easily *(isn't supported by the react-native `ScrollView`)*.
+- iOS: exports the react-native `ScrollView` *(does nothing!)*
 
 Refer to the react-native `ScrollView` [documentation](https://facebook.github.io/react-native/docs/scrollview#props).
 
@@ -12,6 +13,21 @@ npm install --save github:ShaMan123/react-native-scroll-view
 OR
 ```
 yarn add github:ShaMan123/react-native-scroll-view
+```
+
+## Use
+
+```
+import ScrollView from 'react-native-scroll-view';
+
+<ScrollView
+  minimumZoomScale={0.75}
+  maximumZoomScale={3}
+  zoomScale={1.5}
+>
+  {...contentToRender}
+</ScrollView>
+
 ```
 
 ## Props
