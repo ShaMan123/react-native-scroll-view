@@ -15,7 +15,7 @@ OR
 yarn add github:ShaMan123/react-native-scroll-view
 ```
 
-## Use
+## Usage
 
 ```
 import ScrollView from 'react-native-scroll-view';
