@@ -40,6 +40,7 @@ setOverScroll() {
 ```
 
 ## Props
+- [x] [...ViewProps](https://facebook.github.io/react-native/docs/view#props)
 - [ ] alwaysBounceVertical
 - [x] contentContainerStyle
 - [ ] keyboardDismissMode
@@ -96,3 +97,9 @@ setOverScroll() {
 | `getNode()` |  the same as `findNodeHandle(componentRef)`  |
 | `getScrollResponder()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
 | `getScrollRef()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
+
+## Customizing the Gesture Responder
+
+Pass `onStartShouldSetResponder`, `onStartShouldSetResponderCapture`, `onMoveShouldSetResponder`, `onMoveShouldSetResponderCapture` to customize the *`ScrollView`'s* behavior.
+
+[Gesture Responder System documentation](https://facebook.github.io/react-native/docs/gesture-responder-system)
