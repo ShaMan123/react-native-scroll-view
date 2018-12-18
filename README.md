@@ -21,6 +21,7 @@ yarn add @ShaMan123/react-native-scroll-view
 import ScrollView from 'react-native-scroll-view';
 
 <ScrollView
+  ref={ref => this.ref = ref}
   minimumZoomScale={0.75}
   maximumZoomScale={3}
   zoomScale={1.5}
@@ -28,11 +29,19 @@ import ScrollView from 'react-native-scroll-view';
   {...contentToRender}
 </ScrollView>
 
+zoomToRect() {
+  this.ref.getScrollResponder().scrollResponderZoomTo({ x: 0, y: 0, width: 100, height: 100});
+}
+
+setOverScroll() {
+  this.ref.getScrollResponder()
+    .scrollResponderScrollNativeHandleToKeyboard(React.findNodeHandle(this.ref), 100);
+}
 ```
 
 ## Props
 - [ ] alwaysBounceVertical
-- [ ] contentContainerStyle
+- [x] contentContainerStyle
 - [ ] keyboardDismissMode
 - [ ] keyboardShouldPersistTaps
 - [x] onContentSizeChange
@@ -45,8 +54,8 @@ import ScrollView from 'react-native-scroll-view';
 - [ ] refreshControl
 - [ ] removeClippedSubviews
 - [x] scrollEnabled
-- [ ] showsHorizontalScrollIndicator
-- [ ] showsVerticalScrollIndicator
+- [x] showsHorizontalScrollIndicator
+- [x] showsVerticalScrollIndicator
 - [ ] stickyHeaderIndices
 - [ ] endFillColor
 - [ ] overScrollMode
@@ -55,16 +64,16 @@ import ScrollView from 'react-native-scroll-view';
 - [ ] alwaysBounceHorizontal
 - [ ] horizontal
 - [ ] automaticallyAdjustContentInsets
-- [ ] bounces
+- [x] bounces
 - [ ] bouncesZoom
 - [ ] canCancelContentTouches
 - [x] centerContent
-- [ ] contentInset
+- [x] contentInset
 - [ ] contentInsetAdjustmentBehavior
 - [x] contentOffset
 - [x] decelerationRate
 - [x] directionalLockEnabled
-- [ ] indicatorStyle
+- [x] indicatorStyle: differs from the *iOS* prop => accepts a style object
 - [x] maximumZoomScale
 - [x] minimumZoomScale
 - [x] pinchGestureEnabled
@@ -82,3 +91,8 @@ import ScrollView from 'react-native-scroll-view';
 | `scrollTo({ x, y, animated?, scale?, overScroll?, callback?})` | see `ScrollView`'s [scrollTo](https://facebook.github.io/react-native/docs/scrollview#scrollto). Added optional arguments: `scale`, `overScroll`, `callback` |
 | `scrollToEnd({ animated?, callback?})` | see `ScrollView`'s [scrollTo](https://facebook.github.io/react-native/docs/scrollview#scrolltoend). Added optional arguments: `callback` |
 | `scrollResponderZoomTo({ x, y, width, height, animated?, callback?})` |  see [issue](https://github.com/facebook/react-native/issues/9830) |
+| `flashScrollIndicators()` |  see `ScrollView`'s [flashScrollIndicators](https://facebook.github.io/react-native/docs/scrollview#flashscrollindicators) |
+| `scrollResponderScrollNativeHandleToKeyboard(reactNode?, extraHeight, preventNegativeScrollOffset?)` |  see [issue](https://github.com/facebook/react-native/issues/3195)  |
+| `getNode()` |  the return value of `findNodeHandle()`  |
+| `getScrollResponder()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
+| `getScrollRef()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
