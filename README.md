@@ -42,7 +42,7 @@ setOverScroll() {
 ## Props
 | Prop  | Status | Description |
 | :------------ |:---------------|:---------------| 
-|...ViewProps|   ✅     | see [docs](https://facebook.github.io/react-native/docs/view#props)|
+|...ViewProps|   ✅     | see [docs](https://facebook.github.io/react-native/docs/view#props).|
 |  alwaysBounceVertical | :x:  |   |
 |  contentContainerStyle | ✅  |   |
 |  keyboardDismissMode |  :x: |   |
@@ -60,10 +60,10 @@ setOverScroll() {
 | showsHorizontalScrollIndicator  |  ✅  |   |
 |  showsVerticalScrollIndicator |  ✅  |   |
 | stickyHeaderIndices | :x:  |   |
-| endFillColor | :x:  |   |
-| overScrollMode | :x:  |   |
-| scrollPerfTag | :x:  |   |
-| DEPRECATED_sendUpdatedChildFrames | :x:  |   |
+| ~~endFillColor~~ | :x:  | *Android* prop, use *indicatorStyle*  |
+| ~~overScrollMode~~ | :x:  | *Android* prop, use other props  |
+| ~~scrollPerfTag~~ | :x:  |  *Android* prop |
+| ~~DEPRECATED_sendUpdatedChildFrames~~ | :x:  |   |
 | alwaysBounceHorizontal | :x:  |   |
 | horizontal | :x:  |   |
 | automaticallyAdjustContentInsets | :x:  |   |
@@ -86,7 +86,7 @@ setOverScroll() {
 | snapToAlignment  | :x:  |   |
 | snapToInterval  | :x:  |   |
 | zoomScale |  ✅  |   |
-| nestedScrollEnabled  | :x:  |   |
+| ~~nestedScrollEnabled~~  | :x:  | *Android* prop  |
 
 
 ## Methods
