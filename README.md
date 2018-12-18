@@ -40,51 +40,54 @@ setOverScroll() {
 ```
 
 ## Props
-- [x] [...ViewProps](https://facebook.github.io/react-native/docs/view#props)
-- [ ] alwaysBounceVertical
-- [x] contentContainerStyle
-- [ ] keyboardDismissMode
-- [ ] keyboardShouldPersistTaps
-- [x] onContentSizeChange
-- [x] onMomentumScrollBegin
-- [x] onMomentumScrollEnd
-- [x] onScroll
-- [x] onScrollBeginDrag
-- [x] onScrollEndDrag
-- [ ] pagingEnabled
-- [ ] refreshControl
-- [ ] removeClippedSubviews
-- [x] scrollEnabled
-- [x] showsHorizontalScrollIndicator
-- [x] showsVerticalScrollIndicator
-- [ ] stickyHeaderIndices
-- [ ] endFillColor
-- [ ] overScrollMode
-- [ ] scrollPerfTag
-- [ ] DEPRECATED_sendUpdatedChildFrames
-- [ ] alwaysBounceHorizontal
-- [ ] horizontal
-- [ ] automaticallyAdjustContentInsets
-- [x] bounces
-- [ ] bouncesZoom
-- [ ] canCancelContentTouches
-- [x] centerContent
-- [x] contentInset
-- [ ] contentInsetAdjustmentBehavior
-- [x] contentOffset
-- [x] decelerationRate
-- [x] directionalLockEnabled
-- [x] indicatorStyle: differs from the *iOS* prop => accepts a style object
-- [x] maximumZoomScale
-- [x] minimumZoomScale
-- [x] pinchGestureEnabled
-- [ ] scrollEventThrottle
-- [ ] scrollIndicatorInsets
-- [ ] scrollsToTop
-- [ ] snapToAlignment
-- [ ] snapToInterval
-- [x] zoomScale
-- [ ] nestedScrollEnabled
+| Prop  | Status | Description |
+| :------------ |:---------------|:---------------| 
+|...ViewProps|   ✅     | see [docs](https://facebook.github.io/react-native/docs/view#props)|
+|  alwaysBounceVertical | :x:  |   |
+|  contentContainerStyle | ✅  |   |
+|  keyboardDismissMode |  :x: |   |
+|  keyboardShouldPersistTaps |  :x: |   |
+|  onContentSizeChange | ✅  |   |
+|  onMomentumScrollBegin |  ✅ |   |
+| onMomentumScrollEnd  | ✅  |   |
+|  onScroll |  ✅ |   |
+|  onScrollBeginDrag |  ✅ |   |
+|  onScrollEndDrag | ✅  |   |
+|  pagingEnabled | :x:  |   |
+|  refreshControl | :x:  |   |
+|  removeClippedSubviews | :x:  |   |
+|  scrollEnabled | ✅   |   |
+| showsHorizontalScrollIndicator  |  ✅  |   |
+|  showsVerticalScrollIndicator |  ✅  |   |
+| stickyHeaderIndices | :x:  |   |
+| endFillColor | :x:  |   |
+| overScrollMode | :x:  |   |
+| scrollPerfTag | :x:  |   |
+| DEPRECATED_sendUpdatedChildFrames | :x:  |   |
+| alwaysBounceHorizontal | :x:  |   |
+| horizontal | :x:  |   |
+| automaticallyAdjustContentInsets | :x:  |   |
+|  bounces |   ✅ |   |
+|  bouncesZoom |  :x: |   |
+|  canCancelContentTouches | :x:  |   |
+|  centerContent |  ✅  |   |
+|  contentInset |  ✅  |   |
+| contentInsetAdjustmentBehavior  | :x:  |   |
+| contentOffset |  ✅  |   |
+| decelerationRate |  ✅  |   |
+| directionalLockEnabled |  ✅  |   |
+| indicatorStyle  |  ✅  | differs from the *iOS* prop, accepts a style object  |
+| maximumZoomScale |  ✅  |   |
+| minimumZoomScale |  ✅  |   |
+| pinchGestureEnabled |  ✅  |   |
+| scrollEventThrottle  | :x:  |   |
+| scrollIndicatorInsets  | :x:  | pass insets through *indicatorStyle*   |
+| scrollsToTop  | :x:  |   |
+| snapToAlignment  | :x:  |   |
+| snapToInterval  | :x:  |   |
+| zoomScale |  ✅  |   |
+| nestedScrollEnabled  | :x:  |   |
+
 
 ## Methods
 | Method  | Description |
