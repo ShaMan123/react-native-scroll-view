@@ -88,9 +88,9 @@ setOverScroll() {
 ## Methods
 | Method  | Description |
 | :------------ |:---------------| 
-| `scrollTo({ x, y, animated?, scale?, overScroll?, callback?})` | see `ScrollView`'s [scrollTo](https://facebook.github.io/react-native/docs/scrollview#scrollto). Added optional arguments: `scale`, `overScroll`, `callback` |
+| `scrollTo({ x, y, animated?, scale?, overScroll?, callback?})` | see `ScrollView`'s [scrollTo](https://facebook.github.io/react-native/docs/scrollview#scrollto). Added optional arguments: `scale`, `overScroll`: `true` | `false` | { x, y }, `callback` |
 | `scrollToEnd({ animated?, callback?})` | see `ScrollView`'s [scrollTo](https://facebook.github.io/react-native/docs/scrollview#scrolltoend). Added optional arguments: `callback` |
-| `scrollResponderZoomTo({ x, y, width, height, animated?, callback?})` |  see [issue](https://github.com/facebook/react-native/issues/9830) |
+| `scrollResponderZoomTo({ x, y, width, height, animated?, callback?})` |  see [issue](https://github.com/facebook/react-native/issues/9830). Added optional arguments: `callback`|
 | `flashScrollIndicators()` |  see `ScrollView`'s [flashScrollIndicators](https://facebook.github.io/react-native/docs/scrollview#flashscrollindicators) |
 | `scrollResponderScrollNativeHandleToKeyboard(reactNode?, extraHeight, preventNegativeScrollOffset?)` |  see [issue](https://github.com/facebook/react-native/issues/3195)  |
 | `getNode()` |  the same as `findNodeHandle(componentRef)`  |
