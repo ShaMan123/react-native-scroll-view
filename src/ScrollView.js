@@ -794,12 +794,12 @@ export default class ScrollView extends Component {
     }
 
     getScrollResponder() {
-        __DEV__ && console.log('`getScrollResponder` is a dummy method pointing back to the `ScrollView` for compatibility with iOS');
+        __DEV__ && console.log('`getScrollResponder` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
         return this;
     }
 
     getScrollRef() {
-        __DEV__ && console.log('`getScrollRef` is a dummy method pointing back to the `ScrollView` for compatibility with iOS');
+        __DEV__ && console.log('`getScrollRef` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
         return this;
     }
 
