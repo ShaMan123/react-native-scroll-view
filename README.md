@@ -93,6 +93,6 @@ setOverScroll() {
 | `scrollResponderZoomTo({ x, y, width, height, animated?, callback?})` |  see [issue](https://github.com/facebook/react-native/issues/9830) |
 | `flashScrollIndicators()` |  see `ScrollView`'s [flashScrollIndicators](https://facebook.github.io/react-native/docs/scrollview#flashscrollindicators) |
 | `scrollResponderScrollNativeHandleToKeyboard(reactNode?, extraHeight, preventNegativeScrollOffset?)` |  see [issue](https://github.com/facebook/react-native/issues/3195)  |
-| `getNode()` |  the return value of `findNodeHandle()`  |
+| `getNode()` |  the same as `findNodeHandle(componentRef)`  |
 | `getScrollResponder()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
 | `getScrollRef()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
