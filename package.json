@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "github.com/ShaMan123/react-native-scroll-view"
+    "url": "https://github.com/ShaMan123/react-native-scroll-view.git"
   },
   "keywords": [
     "react",
