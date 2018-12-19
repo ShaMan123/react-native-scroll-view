@@ -621,13 +621,17 @@ export default class ScrollView extends Component {
                     velocity: v.x,
                     deceleration,
                     useNativeDriver: true
-                }),
-                Animated.decay(this._animatedValues.scrollIndicator.x, {
-                    velocity: -v.x * this.state.width / this._indicatorLayout.width,
-                    deceleration,
-                    useNativeDriver: true
                 })
             );
+            if (this._indicatorLayout.width > 0) {
+                animations.push(
+                    Animated.decay(this._animatedValues.scrollIndicator.x, {
+                        velocity: -v.x * this.state.width / this._indicatorLayout.width,
+                        deceleration,
+                        useNativeDriver: true
+                    })
+                );
+            }
         }
         if ((this._didTranslate.y || didShrink) && this._gestureState.vy) {
             animations.push(
@@ -635,13 +639,17 @@ export default class ScrollView extends Component {
                     velocity: v.y,
                     deceleration,
                     useNativeDriver: true
-                }),
-                Animated.decay(this._animatedValues.scrollIndicator.y, {
-                    velocity: -v.y * this.state.height / this._indicatorLayout.height,
-                    deceleration,
-                    useNativeDriver: true
                 })
             );
+            if (this._indicatorLayout.height > 0) {
+                animations.push(
+                    Animated.decay(this._animatedValues.scrollIndicator.y, {
+                        velocity: -v.y * this.state.height / this._indicatorLayout.height,
+                        deceleration,
+                        useNativeDriver: true
+                    })
+                );
+            }
         }
 
         this._runningAnimations = animations;
