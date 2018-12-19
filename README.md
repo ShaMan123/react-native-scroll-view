@@ -101,8 +101,13 @@ setOverScroll() {
 | `getScrollResponder()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
 | `getScrollRef()` |  a dummy method pointing back to the component, used for chaining, enables cross platform compatibility  |
 
-## Customizing the Gesture Responder
+## Events
+Use these events to track touches:
+`onTouchStart`,
+`onTouchMove`,
+`onTouchEnd`.
 
-Pass `onStartShouldSetResponder`, `onStartShouldSetResponderCapture`, `onMoveShouldSetResponder`, `onMoveShouldSetResponderCapture` to customize the *`ScrollView`'s* behavior.
+### Customizing the Gesture Responder
+Use `onStartShouldSetResponder`, `onStartShouldSetResponderCapture`, `onMoveShouldSetResponder`, `onMoveShouldSetResponderCapture` to customize the *`ScrollView`'s* behavior.
 
 [Gesture Responder System documentation](https://facebook.github.io/react-native/docs/gesture-responder-system)
