@@ -757,7 +757,7 @@ export default class ScrollView extends Component {
         const scrollIndicatorOffset = this.getScrollIndicatorOffset(clampedScale, translations);
 
         if (animated) {
-            this._activeScrollIndicatorAnimation && this._activeScrollIndicatorAnimation.stop();
+            this._activeScrollIndicatorAnimation && this._activeScrollIndicatorAnimation.stop();    // may cause problems when running a bunch of animation in another place
             const animations = [
                 Animated.timing(this._animatedValues.translate, { toValue: translations, useNativeDriver: true }),
                 Animated.timing(this._animatedValues.scrollIndicator, { toValue: scrollIndicatorOffset, useNativeDriver: true }),
