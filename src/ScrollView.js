@@ -443,7 +443,7 @@ export default class ScrollView extends Component {
             onMoveShouldSetResponder: this._moveShouldSetResponder,
             onMoveShouldSetResponderCapture: () => false,
             onResponderGrant: this._handleGrant,
-            //onResponderReject: () => { console.log('ScrollView reject touch handling') },
+            //onResponderReject: () => { },
             onResponderMove: this._handleMove,
             onResponderRelease: this._handleRelease,
             onResponderTerminationRequest: () => true,
@@ -761,7 +761,6 @@ export default class ScrollView extends Component {
             const animations = [
                 Animated.timing(this._animatedValues.translate, { toValue: translations, useNativeDriver: true }),
                 Animated.timing(this._animatedValues.scrollIndicator, { toValue: scrollIndicatorOffset, useNativeDriver: true }),
-                Animated.timing(this._animatedValues.scrollIndicatorOpacity, { toValue: 1, useNativeDriver: true })
             ];
             this.scrollResponderIsAnimating = true;
             this._scrollToInProgress = true;
@@ -771,7 +770,6 @@ export default class ScrollView extends Component {
                 .start((arg) => {
                     this._scrollToInProgress = false;
                     this.scrollResponderIsAnimating = false;
-                    this.animateScrollIndicatorOpacity(0);
                     callback && callback(arg);
                 });
         }
@@ -805,12 +803,12 @@ export default class ScrollView extends Component {
     }
 
     getScrollResponder() {
-        __DEV__ && console.log('`getScrollResponder` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
+        //__DEV__ && console.log('`getScrollResponder` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
         return this;
     }
 
     getScrollRef() {
-        __DEV__ && console.log('`getScrollRef` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
+        //__DEV__ && console.log('`getScrollRef` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
         return this;
     }
 
