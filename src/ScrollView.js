@@ -416,11 +416,14 @@ export default class ScrollView extends Component {
         const dimensions = Dimensions.get('window');
         const scrollOffset = this.getScrollOffset(scale, translations);
         const scrollOffsetMax = this.getScrollOffset(scale, this.getClampers(scale).complementaryClampers);
-        const offset = {
-            x: (dimensions.width - this._indicatorLayout.width) * scrollOffset.x / scrollOffsetMax.x,
-            y: (dimensions.height - this._indicatorLayout.height) * scrollOffset.y / scrollOffsetMax.y
+        const ratio = {
+            x: scrollOffsetMax.x > 0 ? scrollOffset.x / scrollOffsetMax.x : 0,
+            y: scrollOffsetMax.y > 0 ? scrollOffset.y / scrollOffsetMax.y : 0
         }
-
+        const offset = {
+            x: (dimensions.width - this._indicatorLayout.width) * ratio.x,
+            y: (dimensions.height - this._indicatorLayout.height) * ratio.y
+        }
         return {
             x: Math.min(Math.max(0, offset.x), dimensions.width - this._indicatorLayout.width),
             y: Math.min(Math.max(0, offset.y), dimensions.height - this._indicatorLayout.height)
