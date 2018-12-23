@@ -1,6 +1,17 @@
 ﻿import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Text, View, PanResponder, Image, Animated, StyleSheet, Dimensions, ViewPropTypes, Platform, PixelRatio, I18nManager, findNodeHandle } from 'react-native';
+import {
+    View,
+    PanResponder,
+    Animated,
+    StyleSheet,
+    Dimensions,
+    ViewPropTypes,
+    Platform,
+    PixelRatio,
+    I18nManager,
+    findNodeHandle
+} from 'react-native';
 
 const screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
 const isRTL = I18nManager.isRTL;
@@ -10,33 +21,33 @@ const ScrollEvents = {
     onMomentumScrollEnd: 'onMomentumScrollEnd',
     onScroll: 'onScroll',
     onScrollBeginDrag: 'onScrollBeginDrag',
-    onScrollEndDrag: 'onScrollEndDrag',
-}
+    onScrollEndDrag: 'onScrollEndDrag'
+};
 
 const Events = {
     onLayout: 'onLayout',
     onContentSizeChange: 'onContentSizeChange',
-    ...ScrollEvents,
+    ...ScrollEvents
     //onZoom: 'onZoom',
     //onZoomEnd: 'onZoomEnd'
-}
+};
 
 const shouldSetResponder = {
     onStartShouldSetResponderCapture: 'onStartShouldSetResponderCapture',
     onMoveShouldSetResponderCapture: 'onMoveShouldSetResponderCapture',
     onStartShouldSetResponder: 'onStartShouldSetResponder',
-    onMoveShouldSetResponder: 'onMoveShouldSetResponder',
-}
+    onMoveShouldSetResponder: 'onMoveShouldSetResponder'
+};
 
 const decelerationRate = {
     normal: 0.998,
     fast: 0.99
-}
+};
 
 const directionalLock = {
     horizontal: 'horizontal',
     vertical: 'vertical'
-}
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -45,20 +56,20 @@ const styles = StyleSheet.create({
     indicator: {
         position: 'absolute',
         backgroundColor: 'white',
-        borderRadius: 25,
+        borderRadius: 25
     },
     horizontalScrollIndicator: {
         bottom: 0,
         right: 0,
         width: 100,
-        height: 10,
+        height: 10
     },
     verticalScrollIndicator: {
         top: 0,
         width: 10,
-        height: 100,
+        height: 100
     }
-})
+});
 
 export default class ScrollView extends Component {
     static propTypes = {
@@ -175,12 +186,12 @@ export default class ScrollView extends Component {
                     Animated.parallel([
                         Animated.spring(this._animatedValues.translate, {
                             toValue: clampedTranslate,
-                            useNativeDriver: true,
+                            useNativeDriver: true
                             //speed: 24,
                         }),
                         Animated.spring(this._animatedValues.scrollIndicator, {
                             toValue: this.getScrollIndicatorOffset(this.getClampedScale(), clampedTranslate),
-                            useNativeDriver: true,
+                            useNativeDriver: true
                             //speed: 24,
                         })
                     ]).start(() => {
@@ -231,7 +242,7 @@ export default class ScrollView extends Component {
                 { translateX: this._animatedValues.translate.x },
                 { translateY: this._animatedValues.translate.y },
                 { perspective: 1000 }
-            ],
+            ]
         });
 
         const scrollIndicatorOpacityValue = StyleSheet.flatten([props.horizontalIndicatorStyle, props.verticalIndicatorStyle, props.indicatorStyle]).opacity || 0.3;
@@ -256,7 +267,7 @@ export default class ScrollView extends Component {
                     { perspective: 1000 }
                 ]
             })
-        }
+        };
 
         //this.contentInsetStyle = this.getContentInsetStyleAttr();
 
@@ -274,8 +285,47 @@ export default class ScrollView extends Component {
 
         this.state = {
             width: null,
-            height: null,
+            height: null
+        };
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (!prevState.width && this.state.width) {
+            /*
+            const dimensions = Dimensions.get('window');
+            const { width, height } = this.state;
+            let scale = this.props.zoomScale;
+            if (width > dimensions.width) scale = Math.min(dimensions.width / width, scale);
+            if (height > dimensions.height) scale = Math.min(dimensions.height / height, scale);
+            */
+            const contentOffset = this.props.contentOffset || { x: isRTL ? this.state.width : 0, y: 0 };
+            this.scrollTo({ ...contentOffset, animated: false });
+
+            Animated.timing(this._animatedValues.opacity, {
+                toValue: 1,
+                useNativeDriver: true
+            }).start(() => this.__isMounted = true);
+
+            this.props.onContentSizeChange(this.state.width, this.state.height);
         }
+        else if (prevState.width !== this.state.width) {
+            console.log('ScrollView updated');
+            this.props.onContentSizeChange(this.state.width, this.state.height);
+            //this.scrollTo({ ...this.getScrollOffset(), scale: 1 });
+            //this.scrollResponderZoomTo({ ...this.getScrollOffset(), width: Math.max(this.state.width,prevState.width), height: Math.max(this.state.height,prevState.height) });
+        }
+    }
+
+    _onLayout(evt) {
+        const { width, height } = evt.nativeEvent.layout;
+        if (width > 0 && height > 0 && width !== this.state.width && height !== this.state.height) {
+            this.setState({ width, height });
+        }
+        this.props.onLayout(evt);
+    }
+
+    _onIndicatorLayout(measurement, evt) {
+        this._indicatorLayout[measurement] = evt.nativeEvent.layout[measurement];
     }
 
     getDecelerationRate() {
@@ -285,19 +335,19 @@ export default class ScrollView extends Component {
     getContentInset(scale = this.getClampedScale(), contentInset = this.props.contentInset) {
         const start = {
             key: isRTL ? 'right' : 'left',
-            value: contentInset.start ? contentInset.start : isRTL ? contentInset.right : contentInset.left,
-        }
+            value: contentInset.start ? contentInset.start : isRTL ? contentInset.right : contentInset.left
+        };
         const end = {
             key: isRTL ? 'left' : 'right',
-            value: contentInset.end ? contentInset.end : isRTL ? contentInset.left : contentInset.right,
-        }
+            value: contentInset.end ? contentInset.end : isRTL ? contentInset.left : contentInset.right
+        };
 
         return {
             top: contentInset.top / scale,
             bottom: contentInset.bottom / scale,
             [start.key]: start.value / scale,
             [end.key]: end.value / scale
-        }
+        };
     }
 
     getOverScroll(scale = this.getClampedScale()) {
@@ -315,17 +365,17 @@ export default class ScrollView extends Component {
             [`${attr}Top`]: contentInset.top,
             [`${attr}Bottom`]: contentInset.bottom,
             [`${attr}Left`]: contentInset.left,
-            [`${attr}Right`]: contentInset.right,
+            [`${attr}Right`]: contentInset.right
             //[`${attr}Start`]: contentInset.start,
             //[`${attr}End`]: contentInset.end
-        }
+        };
 
         return StyleSheet.compose(_contentInset);
     }
 
     calcDistance(x1, y1, x2, y2) {
-        let dx = Math.abs(x1 - x2)
-        let dy = Math.abs(y1 - y2)
+        let dx = Math.abs(x1 - x2);
+        let dy = Math.abs(y1 - y2);
         return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
     }
 
@@ -342,12 +392,12 @@ export default class ScrollView extends Component {
         const clampers = {
             x: scaler * this.state.width,
             y: scaler * this.state.height
-        }
+        };
 
         const complementaryClampers = {
             x: clampers.x - this.state.width + dimensions.width / clampedScale,
             y: clampers.y - this.state.height + dimensions.height / clampedScale
-        }
+        };
 
         return { clampers, complementaryClampers };
     }
@@ -362,7 +412,7 @@ export default class ScrollView extends Component {
         const dimensionsAfterInset = {
             width: dimensions.width - contentInset.left - contentInset.right,
             height: dimensions.height - contentInset.top - contentInset.bottom
-        }
+        };
         const { clampers, complementaryClampers } = this.getClampers(scale);
         /*
          *  moved to getClampers()
@@ -379,22 +429,22 @@ export default class ScrollView extends Component {
         const clampCheck = {
             x: this.state.width * clampedScale - dimensionsAfterInset.width > 0,
             y: this.state.height * clampedScale - dimensionsAfterInset.height > 0
-        }
+        };
 
         const sizeCheck = {
             x: this.state.width - dimensionsAfterInset.width > 0,
             y: this.state.height - dimensionsAfterInset.height > 0
-        }
+        };
 
         const alignToTop = {
             x: isRTL ? complementaryClampers.x : clampers.x,
             y: clampers.y
-        }
+        };
 
         const centeredContent = {
             x: sizeCheck.x ? clampers.x + (dimensions.width - this.state.width * clampedScale) * 0.5 : 0,
             y: sizeCheck.y ? clampers.y + (dimensions.height - this.state.height * clampedScale) * 0.5 : 0
-        }
+        };
 
         const centerContent = this.props.centerContent ? {
             x: clampCheck.x ? alignToTop.x : centeredContent.x,
@@ -404,12 +454,12 @@ export default class ScrollView extends Component {
         const clampedValues = {
             x: Math.min(clampers.x + contentInset.left, Math.max(complementaryClampers.x - overScroll.x - contentInset.right, x)),
             y: Math.min(clampers.y + contentInset.top, Math.max(complementaryClampers.y - overScroll.y - contentInset.bottom, y))
-        }
+        };
 
         return {
             x: clampCheck.x || clampedScale > 1 ? clampedValues.x : centeredContent.x,
-            y: clampCheck.y || clampedScale > 1 ? clampedValues.y : centeredContent.y,
-        }
+            y: clampCheck.y || clampedScale > 1 ? clampedValues.y : centeredContent.y
+        };
     }
 
     getScrollIndicatorOffset(scale = this.getClampedScale(), translations = this.getClampedTranslate()) {
@@ -419,15 +469,15 @@ export default class ScrollView extends Component {
         const ratio = {
             x: scrollOffsetMax.x > 0 ? scrollOffset.x / scrollOffsetMax.x : 0,
             y: scrollOffsetMax.y > 0 ? scrollOffset.y / scrollOffsetMax.y : 0
-        }
+        };
         const offset = {
             x: (dimensions.width - this._indicatorLayout.width) * ratio.x,
             y: (dimensions.height - this._indicatorLayout.height) * ratio.y
-        }
+        };
         return {
             x: Math.min(Math.max(0, offset.x), dimensions.width - this._indicatorLayout.width),
             y: Math.min(Math.max(0, offset.y), dimensions.height - this._indicatorLayout.height)
-        }
+        };
     }
 
     animateScrollIndicatorOpacity(toValue) {
@@ -447,7 +497,7 @@ export default class ScrollView extends Component {
             onResponderMove: this._handleMove,
             onResponderRelease: this._handleRelease,
             onResponderTerminationRequest: () => true,
-            onResponderTerminate: this._handleRelease,
+            onResponderTerminate: this._handleRelease
         };
         this._panResponder = PanResponder.create({
             onStartShouldSetPanResponder: (evt, gestureState) => this.props.scrollEnabled || this.props.pinchGestureEnabled,
@@ -459,7 +509,7 @@ export default class ScrollView extends Component {
             onPanResponderRelease: this._handleRelease,
             onPanResponderTerminationRequest: (evt, gestureState) => true,
             onPanResponderTerminate: this._handleRelease,
-            onShouldBlockNativeResponder: (evt, gestureState) => false,
+            onShouldBlockNativeResponder: (evt, gestureState) => false
         });
     }
 
@@ -473,7 +523,7 @@ export default class ScrollView extends Component {
         this._translateStart = {
             x: this._translateValue.x,
             y: this._translateValue.y
-        }
+        };
         this._scaleStart = this.getClampedScale();
         this._eventSender(Events.onScrollBeginDrag);
 
@@ -486,7 +536,7 @@ export default class ScrollView extends Component {
             dx: 0,
             dy: 0,
             vx: 0,
-            vy: 0,
+            vy: 0
         };
 
         this.animateScrollIndicatorOpacity(1);
@@ -507,7 +557,7 @@ export default class ScrollView extends Component {
 
     _handleMove(evt) {
         let touches = evt.nativeEvent.touches;
-        if (touches.length == 2 && this.props.pinchGestureEnabled) {
+        if (touches.length === 2 && this.props.pinchGestureEnabled) {
             let touch1 = touches[0];
             let touch2 = touches[1];
 
@@ -524,23 +574,28 @@ export default class ScrollView extends Component {
 
             this._isZooming = true;
 
-            return Animated.event([
-                null,
-                {
-                    scale: this._animatedValues.scale,
-                    x: this._animatedValues.translate.x,
-                    y: this._animatedValues.translate.y,
-                    scrollX: this._animatedValues.scrollIndicator.x,
-                    scrollY: this._animatedValues.scrollIndicator.y
-                }
-            ], () => { useNativeDriver: true })(null, {
-                scale,
-                ...clampedTranslations,
-                scrollX: scrollIndicatorOffset.x,
-                scrollY: scrollIndicatorOffset.y
-            });
+            return Animated.event(
+                [
+                    null,
+                    {
+                        scale: this._animatedValues.scale,
+                        x: this._animatedValues.translate.x,
+                        y: this._animatedValues.translate.y,
+                        scrollX: this._animatedValues.scrollIndicator.x,
+                        scrollY: this._animatedValues.scrollIndicator.y
+                    }
+                ],
+                () => {
+                    return { useNativeDriver: true };
+                })
+                (null, {
+                    scale,
+                    ...clampedTranslations,
+                    scrollX: scrollIndicatorOffset.x,
+                    scrollY: scrollIndicatorOffset.y
+                });
         }
-        else if (touches.length == 1 && !this._isZooming && this.props.scrollEnabled) {
+        else if (touches.length === 1 && !this._isZooming && this.props.scrollEnabled) {
             const { pageX, pageY, timestamp } = evt.nativeEvent;
             const dx = pageX - this._grant.pageX;
             const dy = pageY - this._grant.pageY;
@@ -551,7 +606,7 @@ export default class ScrollView extends Component {
             const translations = {
                 x: dx / scale + this._translateStart.x,
                 y: dy / scale + this._translateStart.y
-            }
+            };
             const m = Math.abs(vy) / Math.abs(vx);
             const clampedTranslations = this.getClampedTranslate(translations);
 
@@ -560,7 +615,7 @@ export default class ScrollView extends Component {
                     this._directionalLock = {
                         value: m < 0.5 ? directionalLock.horizontal : m > 2 ? directionalLock.vertical : null,
                         ...clampedTranslations
-                    }
+                    };
                 }
                 switch (this._directionalLock.value) {
                     case directionalLock.horizontal:
@@ -575,7 +630,7 @@ export default class ScrollView extends Component {
             this._didTranslate = {
                 x: translations.x === clampedTranslations.x,
                 y: translations.y === clampedTranslations.y
-            }
+            };
 
             const { touches, changedTouches, ...nativeEvent } = evt.nativeEvent;
             this._lastTouch = nativeEvent;
@@ -583,18 +638,23 @@ export default class ScrollView extends Component {
 
             const scrollIndicatorOffset = this.getScrollIndicatorOffset(scale, clampedTranslations);
 
-            return Animated.event([
-                null, {
-                    x: this._animatedValues.translate.x,
-                    y: this._animatedValues.translate.y,
-                    scrollX: this._animatedValues.scrollIndicator.x,
-                    scrollY: this._animatedValues.scrollIndicator.y,
-                }
-            ], () => { useNativeDriver: true })(null, {
-                ...clampedTranslations,
-                scrollX: scrollIndicatorOffset.x,
-                scrollY: scrollIndicatorOffset.y
-            });
+            return Animated.event(
+                [
+                    null, {
+                        x: this._animatedValues.translate.x,
+                        y: this._animatedValues.translate.y,
+                        scrollX: this._animatedValues.scrollIndicator.x,
+                        scrollY: this._animatedValues.scrollIndicator.y
+                    }
+                ],
+                () => {
+                    return { useNativeDriver: true };
+                })
+                (null, {
+                    ...clampedTranslations,
+                    scrollX: scrollIndicatorOffset.x,
+                    scrollY: scrollIndicatorOffset.y
+                });
         }
     }
 
@@ -607,7 +667,7 @@ export default class ScrollView extends Component {
         const v = {
             x: this._gestureState.vx / clampedScale,
             y: this._gestureState.vy / clampedScale
-        }
+        };
 
         this._initialDistance = null;
         this._initialScale = null;
@@ -672,8 +732,8 @@ export default class ScrollView extends Component {
             const t = setTimeout(() => {
                 this.animateScrollIndicatorOpacity(0);
                 clearTimeout(t);
-            }, Math.max(500 - (new Date() - timeStart), 0))
-        }
+            }, Math.max(500 - (new Date() - timeStart), 0));
+        };
 
         if (animations.length > 0) {
             this._eventSender(Events.onMomentumScrollBegin);
@@ -693,51 +753,12 @@ export default class ScrollView extends Component {
         }
     }
 
-    _onLayout(evt) {
-        const { width, height } = evt.nativeEvent.layout;
-        if (width > 0 && height > 0 && width !== this.state.width && height !== this.state.height) {
-            this.setState({
-                width,
-                height
-            });
-        }
-        this.props.onLayout(evt);
-        this.props.onContentSizeChange(width, height);
-    }
-
-    _onIndicatorLayout(measurement, evt) {
-        this._indicatorLayout[measurement] = evt.nativeEvent.layout[measurement];
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (!prevState.width && this.state.width) {
-            /*
-            const dimensions = Dimensions.get('window');
-            const { width, height } = this.state;
-            let scale = this.props.zoomScale;
-            if (width > dimensions.width) scale = Math.min(dimensions.width / width, scale);
-            if (height > dimensions.height) scale = Math.min(dimensions.height / height, scale);
-            */
-            const contentOffset = this.props.contentOffset || { x: isRTL ? this.state.width : 0, y: 0 };
-            this.scrollTo({ ...contentOffset, animated: false });
-
-            Animated.timing(this._animatedValues.opacity, {
-                toValue: 1,
-                useNativeDriver: true
-            }).start(() => this.__isMounted = true);
-        }
-        else if (prevState.width !== this.state.width) {
-            this.scrollTo({ ...this.getScrollOffset() });
-            //this.scrollResponderZoomTo({ x: 0, y: 0, ...Dimensions.get('window') })
-        }
-    }
-
     getScrollOffset(scale = this.getClampedScale(), translation = this._translateValue) {
         const scaler = 0.5 * (scale - 1) / scale;
         return {
             x: Math.round(this.state.width * scaler - translation.x),
             y: Math.round(this.state.height * scaler - translation.y)
-        }
+        };
     }
 
     scrollTo({ x, y, overScroll = false, scale = null, animated = true, callback = null }) {
@@ -746,7 +767,7 @@ export default class ScrollView extends Component {
         const _contentOffset = {
             x: -x + this.state.width * scaler,
             y: -y + this.state.height * scaler
-        }
+        };
 
         const translations = overScroll === true ? _contentOffset : this.getClampedTranslate(_contentOffset, clampedScale);
         if (typeof overScroll === 'object') {
@@ -760,7 +781,7 @@ export default class ScrollView extends Component {
             this._activeScrollIndicatorAnimation && this._activeScrollIndicatorAnimation.stop();    // may cause problems when running a bunch of animation in another place
             const animations = [
                 Animated.timing(this._animatedValues.translate, { toValue: translations, useNativeDriver: true }),
-                Animated.timing(this._animatedValues.scrollIndicator, { toValue: scrollIndicatorOffset, useNativeDriver: true }),
+                Animated.timing(this._animatedValues.scrollIndicator, { toValue: scrollIndicatorOffset, useNativeDriver: true })
             ];
             this.scrollResponderIsAnimating = true;
             this._scrollToInProgress = true;
@@ -820,6 +841,23 @@ export default class ScrollView extends Component {
         ]).start();
     }
 
+    _eventSender(eventType) {
+        const { width, height } = this.state;
+        const scale = this.getClampedScale();
+        const evt = {};
+
+        const newNativeEvent = {
+            target: this.getNode(),
+            layoutMeasurement: { width, height },
+            contentSize: { width: width * scale, height: height * scale },
+            contentOffset: this.getScrollOffset(),
+            contentInset: this.getContentInset(1),
+            zoom: scale
+        };
+        evt.nativeEvent = newNativeEvent;
+        this.props[eventType](evt);
+    }
+
     render() {
         const {
             showsHorizontalScrollIndicator,
@@ -861,22 +899,5 @@ export default class ScrollView extends Component {
                 }
             </View>
         );
-    }
-
-    _eventSender(eventType) {
-        const { width, height } = this.state;
-        const scale = this.getClampedScale();
-        const evt = {};
-
-        const newNativeEvent = {
-            target: this.getNode(),
-            layoutMeasurement: { width, height },
-            contentSize: { width: width * scale, height: height * scale },
-            contentOffset: this.getScrollOffset(),
-            contentInset: this.getContentInset(1),
-            zoom: scale
-        }
-        evt.nativeEvent = newNativeEvent;
-        this.props[eventType](evt);
     }
 }
