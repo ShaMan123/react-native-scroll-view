@@ -12,6 +12,7 @@ import {
     I18nManager,
     findNodeHandle
 } from 'react-native';
+import throttle from 'lodash/throttle';
 
 const screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
 const isRTL = I18nManager.isRTL;
@@ -98,6 +99,7 @@ export default class ScrollView extends Component {
         directionalLockEnabled: PropTypes.bool,
         showsHorizontalScrollIndicator: PropTypes.bool,
         showsVerticalScrollIndicator: PropTypes.bool,
+        scrollEventThrottle: PropTypes.number,
 
         //  additional ScrollView props
         contentContainerStyle: ViewPropTypes.style,
@@ -138,6 +140,7 @@ export default class ScrollView extends Component {
         directionalLockEnabled: false,
         showsHorizontalScrollIndicator: true,
         showsVerticalScrollIndicator: true,
+        scrollEventThrottle: 0,
 
         contentContainerStyle: null,
         style: styles.container,
@@ -174,7 +177,7 @@ export default class ScrollView extends Component {
         this._translateValue = { x: 0, y: 0 };
         translate.addListener((value) => {
             this._translateValue = value;
-            this._eventSender(Events.onScroll);
+            this._eventSender(Events.onScroll); //throttle
 
             if (this._runningAnimations.length > 0) {
                 const clampedTranslate = this.getClampedTranslate(this._translateValue);
