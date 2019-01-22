@@ -18,7 +18,7 @@ yarn add @ShaMan123/react-native-scroll-view
 ## Usage
 
 ```
-import ScrollView from 'react-native-scroll-view';
+import ScrollView from '@ShaMan123/react-native-scroll-view';
 
 <ScrollView
   ref={ref => this.ref = ref}
