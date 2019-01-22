@@ -7,11 +7,11 @@ A react-native component for android that mimics the react-native iOS `ScrollVie
 Refer to the react-native `ScrollView` [documentation](https://facebook.github.io/react-native/docs/scrollview#props).
 
 ## Installation
-```
+```bash
 npm install --save @shaman123/react-native-scroll-view
 ```
 OR
-```
+```bash
 yarn add @shaman123/react-native-scroll-view
 ```
 
