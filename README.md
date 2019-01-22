@@ -8,17 +8,17 @@ Refer to the react-native `ScrollView` [documentation](https://facebook.github.i
 
 ## Installation
 ```
-npm install --save @ShaMan123/react-native-scroll-view
+npm install --save @shaman123/react-native-scroll-view
 ```
 OR
 ```
-yarn add @ShaMan123/react-native-scroll-view
+yarn add @shaman123/react-native-scroll-view
 ```
 
 ## Usage
 
 ```
-import ScrollView from '@ShaMan123/react-native-scroll-view';
+import ScrollView from '@shaman123/react-native-scroll-view';
 
 <ScrollView
   ref={ref => this.ref = ref}
