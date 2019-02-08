@@ -1,0 +1,25 @@
+﻿{
+  "compilerOptions": {
+    "baseUrl": ".",
+    //"noEmitOnError": false,
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "jsx": "react-native",
+    "lib": [ "es6" ],
+    "moduleResolution": "node",
+    "noEmit": true,
+    "strict": true,
+    "target": "esnext",
+    "types": [
+      "jest",
+      "lodash",
+      "react",
+      "react-native",
+      "react-test-renderer"
+    ],
+  },
+  "exclude": [ "node_modules" ]
+}

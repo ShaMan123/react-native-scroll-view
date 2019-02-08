@@ -32,10 +32,14 @@
     "react": ">=15.0.0",
     "react-native": "*"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/react": "^16.8.2",
+    "@types/react-native": "^0.57.34"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "public-publish": "npm publish --access public"
   },
+  "types": "index.d.ts",
   "license": "ISC"
 }
