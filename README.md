@@ -9,12 +9,23 @@ Refer to the react-native `ScrollView` [documentation](https://facebook.github.i
 ## Installation
 ```bash
 npm install --save @shaman123/react-native-scroll-view
-npm install --save-dev @types/@shaman123/react-native-scroll-view	//	<- run if using TypeScript
 ```
 OR
 ```bash
 yarn add @shaman123/react-native-scroll-view
-yarn add --dev @types/@shaman123/react-native-scroll-view --production=false	//	<- run if using TypeScript
+```
+
+## TypeScript
+edit your project's tsconfig.json:
+```
+{
+    //...
+    
+    "paths": {
+      //...
+      "@shaman123/react-native-scroll-view": [ "node_modules/@shaman123/react-native-scroll-view/index.d.ts" ]
+    }
+}
 ```
 
 ## Usage
