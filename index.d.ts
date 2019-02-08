@@ -13,7 +13,7 @@ export interface IScrollViewProps extends ScrollViewPropsIOS {
 
 export type UScrollViewProps = IScrollViewProps | ScrollViewPropsIOS;
 
-export default class ScrollView<ScrollViewProps> extends RNScrollView {
+export default class ScrollView<UScrollViewProps> extends RNScrollView {
     props: UScrollViewProps;
 
     scrollTo(options: {
@@ -45,8 +45,8 @@ export default class ScrollView<ScrollViewProps> extends RNScrollView {
     getNode(): number;
 
     getScrollResponder(): JSX.Element;
-    getScrollResponder(): ScrollView<ScrollViewProps>;
+    getScrollResponder(): ScrollView<UScrollViewProps>;
 
-    getScrollRef(): ScrollView<ScrollViewProps>;
+    getScrollRef(): ScrollView<UScrollViewProps>;
 
 }

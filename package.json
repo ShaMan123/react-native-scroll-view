@@ -1,6 +1,6 @@
 {
   "name": "@shaman123/react-native-scroll-view",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "iOS ScrollView for Android",
   "main": "src/index.js",
   "repository": {
