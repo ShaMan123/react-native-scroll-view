@@ -61,11 +61,12 @@ setOverScroll() {
 |  keyboardDismissMode |  :x: |   |
 |  keyboardShouldPersistTaps |  :x: |   |
 |  onContentSizeChange | ✅  |   |
-|  onMomentumScrollBegin |  ✅ |   |
-| onMomentumScrollEnd  | ✅  |   |
-|  onScroll |  ✅ |   |
-|  onScrollBeginDrag |  ✅ |   |
-|  onScrollEndDrag | ✅  |   |
+|  onMomentumScrollBegin |  ✅ | property `velocity` is not available yet  |
+| onMomentumScrollEnd  | ✅  | property `velocity` is not available yet  |
+|  onScroll |  ✅ | property `velocity` is not available yet  |
+|  onScrollBeginDrag |  ✅ | property `velocity` is not available yet  |
+|  onScrollEndDrag | ✅  |  property `velocity` is not available yet |
+|  onScrollAnimationEnd | ✅  |   |
 |  pagingEnabled | :x:  |   |
 |  refreshControl | :x:  |   |
 |  removeClippedSubviews | :x:  |   |
@@ -119,6 +120,8 @@ Use these events to track touches:
 `onTouchStart`,
 `onTouchMove`,
 `onTouchEnd`.
+
+**IMPORTANT**: When using `[ScrollEvent: onMomentumScrollBegin, onMomentumScrollEnd, onScroll, onScrollBeginDrag, onScrollEndDrag](e) => void` the property `e.nativeEvent.velocity` is not yet available, defaulting to `{ x: 0, y: 0 }`
 
 ### Customizing the Gesture Responder
 Use `onStartShouldSetResponder`, `onStartShouldSetResponderCapture`, `onMoveShouldSetResponder`, `onMoveShouldSetResponderCapture` to customize the *`ScrollView`'s* behavior.
