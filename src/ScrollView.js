@@ -27,6 +27,7 @@ const ScrollEvents = {
 const Events = {
     onLayout: 'onLayout',
     onContentSizeChange: 'onContentSizeChange',
+    onScrollAnimationEnd: 'onScrollAnimationEnd',
     ...ScrollEvents
     //onZoom: 'onZoom',
     //onZoomEnd: 'onZoomEnd'
@@ -841,6 +842,17 @@ export default class ScrollView extends Component {
         ]).start();
     }
 
+    /**
+     * 
+     * @param {string} eventType
+     * need to implement velocity
+     * can use:
+        const v = {
+            x: this._gestureState.vx / clampedScale,
+            y: this._gestureState.vy / clampedScale
+        };
+        
+     */
     _eventSender(eventType) {
         const { width, height } = this.state;
         const scale = this.getClampedScale();
@@ -852,10 +864,12 @@ export default class ScrollView extends Component {
             contentSize: { width: width * scale, height: height * scale },
             contentOffset: this.getScrollOffset(),
             contentInset: this.getContentInset(1),
-            zoom: scale
+            velocity: { x: 0, y: 0 },
+            zoomScale: scale
         };
         evt.nativeEvent = newNativeEvent;
         this.props[eventType](evt);
+        if (eventType === Events.onMomentumScrollEnd && this.props.onScrollAnimationEnd) this.props.onScrollAnimationEnd();
     }
 
     render() {
