@@ -10,20 +10,8 @@ import {
     Platform,
     PixelRatio,
     I18nManager,
-    findNodeHandle,
-    requireNativeComponent,
-    NativeModules
+    findNodeHandle
 } from 'react-native';
-
-const RNScrollView = requireNativeComponent('RNZoomScrollView', ScrollView, {
-    nativeOnly: {
-        nativeID: true,
-        onChange: true
-    }
-});
-
-const ScrollViewManager = NativeModules.RNZoomScrollViewManager || {};
-
 
 const screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
 const isRTL = I18nManager.isRTL;
@@ -884,7 +872,7 @@ export default class ScrollView extends Component {
         if (eventType === Events.onMomentumScrollEnd && this.props.onScrollAnimationEnd) this.props.onScrollAnimationEnd();
     }
 
-    render1() {
+    render() {
         const {
             showsHorizontalScrollIndicator,
             showsVerticalScrollIndicator,
@@ -925,9 +913,5 @@ export default class ScrollView extends Component {
                 }
             </View>
         );
-    }
-
-    render() {
-        return <RNScrollView />;
     }
 }
