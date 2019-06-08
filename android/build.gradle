@@ -1,0 +1,73 @@
+apply plugin: 'com.android.library'
+
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+android {
+    compileSdkVersion safeExtGet("compileSdkVersion", 23)
+    //buildToolsVersion safeExtGet("minSdkVersion", "23.0.1")
+
+    defaultConfig {
+        minSdkVersion safeExtGet("minSdkVersion", 16)
+        targetSdkVersion safeExtGet("targetSdkVersion", 22)
+        versionCode 1
+        versionName "1.0"
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+/*
+repositories {
+    mavenCentral()
+    jcenter()
+    google()
+    maven {
+        url "https://dl.bintray.com/kexanie/maven"
+    }
+}
+*/
+buildscript {
+    repositories {
+        maven { url "https://maven.google.com" }
+        jcenter()
+        google()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        maven {
+            url "https://maven.fabric.io/public"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.2'
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        maven { url "https://maven.google.com" }
+        jcenter()
+        google()
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../example/node_modules/react-native/android"
+        }
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        maven { url "https://jitpack.io" }
+    }
+}
+
+dependencies {
+    implementation 'com.facebook.react:react-native:+'
+    implementation 'com.github.yalantis:ucrop:2.2.3-native'
+}
+
+
