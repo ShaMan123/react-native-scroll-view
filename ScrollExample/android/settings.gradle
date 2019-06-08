@@ -1,0 +1,4 @@
+rootProject.name = 'ScrollExample'
+include ':react-native-scroll-view'
+project(':react-native-scroll-view').projectDir = new File(rootProject.projectDir, '../../android')
+include ':app'
