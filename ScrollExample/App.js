@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView } from 'react-native';
 
 const instructions = Platform.select({
     ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -22,12 +22,25 @@ type Props = {};
 export default class App extends Component<Props> {
     render() {
         return (
-            <View style={styles.container}>
-                <Text style={styles.welcome}>Welcome to React Native!</Text>
-                <Text style={styles.instructions}>To get started, edit App.js</Text>
-                <Text style={styles.instructions}>{instructions}</Text>
-                <ScrollView style={{flex:1}} />
-            </View>
+            <RNScrollView
+                style={{ flex: 1 }}
+                //contentContainerStyle={styles.container}
+                onScroll={e => console.log(e.nativeEvent)}
+                scrollEnabled
+            >
+                
+                    <Text style={styles.welcome}>Welcome to React Native!</Text>
+                    <Text style={styles.instructions}>To get started, edit App.js</Text>
+                    <Text style={styles.instructions}>{instructions}</Text>
+                    <Image
+                        style={{ width: 300, height: 300 }}
+                        source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
+                    />
+                    <Image
+                        style={{ width: 300, height: 300 }}
+                        source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
+                    />
+            </RNScrollView>
         );
     }
 }

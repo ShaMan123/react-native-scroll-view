@@ -1,53 +1,74 @@
 package com.autodidact.rnscrollview;
 
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.scroll.FpsListener;
+import com.facebook.react.views.scroll.ReactScrollView;
+import com.facebook.react.views.scroll.ReactScrollViewManager;
+import com.facebook.react.views.view.ReactViewGroup;
+import com.facebook.react.views.view.ReactViewManager;
 
+import java.util.List;
 import java.util.Map;
 
-public class RNZoomScrollViewManager extends SimpleViewManager<ZoomableView> {
-    private static final String PROPS_MATH_TEXT = "text";
-    private static final String PROPS_MATH_ENGINE = "mathEngine";
-    private static final String PROPS_NATIVE_PROPS = "nativeProps";
-    private static final String PROPS_VERTICAL_SCROLL = "verticalScroll";
-    private static final String PROPS_HORIZONTAL_SCROLL = "horizontalScroll";
-    private static final String PROPS_SHOW_SCROLLBAR_DELAY = "showScrollBarDelay";
-    private static final String PROPS_FONT_COLOR = "fontColor";
-    private static final String PROPS_FONT_SHRINK = "fontShrink";
-    private static final String PROPS_FLEX_WRAP = "flexWrap";
-    private static final String PROPS_SCAELS_TO_FIT = "scalesToFit";
+import javax.annotation.Nullable;
 
-    private static final String PROPS_MATH_ENGINE_KATEX = "KATEX";
-    private static final String PROPS_MATH_ENGINE_MATHJAX = "MATHJAX";
-    private static final String PROPS_FLEX_WRAP_WRAP = "wrap";
+public class RNZoomScrollViewManager extends ReactScrollViewManager {
+    protected @Nullable FpsListener mFpsListener = null;
+    private ReactScrollViewManager scrollViewManager;
+    private ReactScrollView scrollView;
+    private ReactViewGroup g;
 
     @Override
     public String getName() {
         return "RNZoomScrollView";
     }
 
-    @Override
-    protected ZoomableView createViewInstance(ThemedReactContext context) {
-        ZoomableView view = new ZoomableView(context);
-        return view;
+
+    public RNZoomScrollViewManager(@Nullable FpsListener fpsListener) {
+        super(fpsListener);
+        mFpsListener = fpsListener;
     }
 
+    public ZoomableView createViewInstance(ThemedReactContext context) {
+        //scrollViewManager.createViewInstance(context);
+
+        g = new ReactViewGroup(context);
+        ZoomableView v = new ZoomableView(context);
+        v.addView(g);
+        return v;
+    }
+
+    @Override
+    public void addView(ReactScrollView parent, View child, int index) {
+        g.addView(child, index);
+    }
 /*
-    @ReactProp(name = PROPS_MATH_TEXT)
-    public void setMathText(RNMathView viewContainer, String text) {
-        //String r = text.getString(0).replaceAll("###", "\\\\");
-        viewContainer.setText(text);
+    @Override
+    public void addViews(ReactScrollView parent, List<View> views) {
+        Log.d("ScrollV", "addViews: " + parent.toString() + "    child:  " + views.toString());
+        super.addViews(g, views);
     }
-*/
-    public Map getExportedCustomBubblingEventTypeConstants() {
-        return MapBuilder.builder()
-                .put(
-                        "topChange",
-                        MapBuilder.of(
-                                "phasedRegistrationNames",
-                                MapBuilder.of("bubbled", "onChange")))
-                .build();
-    }
+
+    /*
+                        @Override
+                        public ReactScrollView createViewInstance(ThemedReactContext context) {
+                            return new ReactZoomScrollView(context);
+                        }
+
+                    /*
+                        @ReactProp(name = PROPS_MATH_TEXT)
+                        public void setMathText(RNMathView viewContainer, String text) {
+                            //String r = text.getString(0).replaceAll("###", "\\\\");
+                            viewContainer.setText(text);
+                        }
+                    */
+
 }

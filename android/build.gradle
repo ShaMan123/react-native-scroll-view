@@ -68,6 +68,7 @@ allprojects {
 dependencies {
     implementation 'com.facebook.react:react-native:+'
     implementation 'com.github.yalantis:ucrop:2.2.3-native'
+    implementation 'org.jetbrains:annotations-java5:15.0'
 }
 
 

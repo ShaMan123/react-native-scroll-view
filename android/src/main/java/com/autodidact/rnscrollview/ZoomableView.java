@@ -6,14 +6,20 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
+
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.views.scroll.ReactScrollView;
+import com.facebook.react.views.view.ReactViewGroup;
 
 /**
  * Zooming view.
  */
-public class ZoomableView extends FrameLayout {
+public class ZoomableView extends ReactScrollView {
 
     /**
      * Zooming view listener interface.
@@ -65,8 +71,17 @@ public class ZoomableView extends FrameLayout {
 
     private Bitmap ch;
 
-    public ZoomableView(final Context context) {
+    public ZoomableView(final ReactContext context) {
         super(context);
+        //setScrollEnabled(true);
+    }
+
+    public int getScrollHeight(){
+        return getMaxScrollAmount() + getHeight();
+    }
+
+    public int getScrollWidth(){
+        return getWidth();
     }
 
     public float getZoom() {
@@ -169,6 +184,14 @@ public class ZoomableView extends FrameLayout {
     }
 
     @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        Log.d("ScrollV", "onTouchEvent: " + super.onTouchEvent(ev) + "   " + ev.toString());
+        scrollBy(0, 50);
+        return super.onTouchEvent(ev);
+        //return true;
+    }
+
+    @Override
     public boolean dispatchTouchEvent(final MotionEvent ev) {
         // single touch
         if (ev.getPointerCount() == 1) {
@@ -192,7 +215,7 @@ public class ZoomableView extends FrameLayout {
         final float x = ev.getX();
         final float y = ev.getY();
 
-        final float w = miniMapHeight * (float) getWidth() / getHeight();
+        final float w = miniMapHeight * (float) getWidth() / getScrollHeight();
         final float h = miniMapHeight;
         final boolean touchingMiniMap = x >= 10.0f && x <= 10.0f + w && y >= 10.0f && y <= 10.0f + h;
 
@@ -207,10 +230,10 @@ public class ZoomableView extends FrameLayout {
         final float x = ev.getX();
         final float y = ev.getY();
 
-        final float w = miniMapHeight * (float) getWidth() / getHeight();
+        final float w = miniMapHeight * (float) getWidth() / getScrollHeight();
         final float h = miniMapHeight;
         final float zx = (x - 10.0f) / w * getWidth();
-        final float zy = (y - 10.0f) / h * getHeight();
+        final float zy = (y - 10.0f) / h * getScrollHeight();
         smoothZoomTo(smoothZoom, zx, zy);
     }
 
@@ -242,11 +265,13 @@ public class ZoomableView extends FrameLayout {
                 if (scrolling || (smoothZoom > 1.0f && l > 30.0f)) {
                     if (!scrolling) {
                         scrolling = true;
-                        ev.setAction(MotionEvent.ACTION_CANCEL);
-                        super.dispatchTouchEvent(ev);
+                        //ev.setAction(MotionEvent.ACTION_CANCEL);
+                        Log.d("ScrollV", "processSingleTouchOutsideMinimap: " + ev.toString());
+                        //super.dispatchTouchEvent(ev);
                     }
                     smoothZoomX -= dx / zoom;
                     smoothZoomY -= dy / zoom;
+                    super.dispatchTouchEvent(ev);
                     return;
                 }
                 break;
@@ -261,10 +286,11 @@ public class ZoomableView extends FrameLayout {
                         if (smoothZoom == 1.0f) {
                             smoothZoomTo(maxZoom, x, y);
                         } else {
-                            smoothZoomTo(1.0f, getWidth() / 2.0f, getHeight() / 2.0f);
+                            smoothZoomTo(1.0f, getWidth() / 2.0f, getScrollHeight() / 2.0f);
                         }
                         lastTapTime = 0;
-                        ev.setAction(MotionEvent.ACTION_CANCEL);
+                        //ev.setAction(MotionEvent.ACTION_CANCEL);
+                        Log.d("ScrollV", "processSingleTouchOutsideMinimap: up " + ev.toString());
                         super.dispatchTouchEvent(ev);
                         return;
                     }
@@ -272,6 +298,8 @@ public class ZoomableView extends FrameLayout {
                     lastTapTime = System.currentTimeMillis();
 
                     performClick();
+
+                    super.dispatchTouchEvent(ev);
                 }
                 break;
 
@@ -279,7 +307,7 @@ public class ZoomableView extends FrameLayout {
                 break;
         }
 
-        ev.setLocation(zoomX + (x - 0.5f * getWidth()) / zoom, zoomY + (y - 0.5f * getHeight()) / zoom);
+        ev.setLocation(zoomX + (x - 0.5f * getWidth()) / zoom, zoomY + (y - 0.5f * getScrollHeight()) / zoom);
 
         ev.getX();
         ev.getY();
@@ -330,7 +358,8 @@ public class ZoomableView extends FrameLayout {
                 break;
         }
 
-        ev.setAction(MotionEvent.ACTION_CANCEL);
+        //ev.setAction(MotionEvent.ACTION_CANCEL);
+        Log.d("ScrollV", "processDoubleTouchOutsideMinimap: " + ev.toString());
         super.dispatchTouchEvent(ev);
     }
 
@@ -351,7 +380,7 @@ public class ZoomableView extends FrameLayout {
         // do zoom
         zoom = lerp(bias(zoom, smoothZoom, 0.05f), smoothZoom, 0.2f);
         smoothZoomX = clamp(0.5f * getWidth() / smoothZoom, smoothZoomX, getWidth() - 0.5f * getWidth() / smoothZoom);
-        smoothZoomY = clamp(0.5f * getHeight() / smoothZoom, smoothZoomY, getHeight() - 0.5f * getHeight() / smoothZoom);
+        smoothZoomY = clamp(0.5f * getScrollHeight() / smoothZoom, smoothZoomY, getScrollHeight() - 0.5f * getScrollHeight() / smoothZoom);
 
         zoomX = lerp(bias(zoomX, smoothZoomX, 0.1f), smoothZoomX, 0.35f);
         zoomY = lerp(bias(zoomY, smoothZoomY, 0.1f), smoothZoomY, 0.35f);
@@ -368,10 +397,10 @@ public class ZoomableView extends FrameLayout {
         }
 
         // prepare matrix
-        m.setTranslate(0.5f * getWidth(), 0.5f * getHeight());
+        m.setTranslate(0.5f * getWidth(), 0.5f * getScrollHeight());
         m.preScale(zoom, zoom);
         m.preTranslate(-clamp(0.5f * getWidth() / zoom, zoomX, getWidth() - 0.5f * getWidth() / zoom),
-                -clamp(0.5f * getHeight() / zoom, zoomY, getHeight() - 0.5f * getHeight() / zoom));
+                -clamp(0.5f * getScrollHeight() / zoom, zoomY, getScrollHeight() - 0.5f * getScrollHeight() / zoom));
 
         // get view
         final View v = getChildAt(0);
@@ -398,13 +427,13 @@ public class ZoomableView extends FrameLayout {
         // draw minimap
         if (showMinimap) {
             if (miniMapHeight < 0) {
-                miniMapHeight = getHeight() / 4;
+                miniMapHeight = getScrollHeight() / 4;
             }
 
             canvas.translate(10.0f, 10.0f);
 
             p.setColor(0x80000000 | 0x00ffffff & miniMapColor);
-            final float w = miniMapHeight * (float) getWidth() / getHeight();
+            final float w = miniMapHeight * (float) getWidth() / getScrollHeight();
             final float h = miniMapHeight;
             canvas.drawRect(0.0f, 0.0f, w, h, p);
 
@@ -418,7 +447,7 @@ public class ZoomableView extends FrameLayout {
 
             p.setColor(0x80000000 | 0x00ffffff & miniMapColor);
             final float dx = w * zoomX / getWidth();
-            final float dy = h * zoomY / getHeight();
+            final float dy = h * zoomY / getScrollHeight();
             canvas.drawRect(dx - 0.5f * w / zoom, dy - 0.5f * h / zoom, dx + 0.5f * w / zoom, dy + 0.5f * h / zoom, p);
 
             canvas.translate(-10.0f, -10.0f);

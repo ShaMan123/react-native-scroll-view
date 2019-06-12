@@ -12,10 +12,11 @@ import {
     I18nManager,
     findNodeHandle,
     requireNativeComponent,
-    NativeModules
+    NativeModules,
+    ScrollView as RNScrollView
 } from 'react-native';
 
-const RNScrollView = requireNativeComponent('RNZoomScrollView', ScrollView, {
+const RNZoomScrollView = requireNativeComponent('RNZoomScrollView', ScrollView, {
     nativeOnly: {
         nativeID: true,
         onChange: true
@@ -927,7 +928,27 @@ export default class ScrollView extends Component {
         );
     }
 
+    render2() {
+        return (
+            <RNZoomScrollView
+                style={style.base}
+            >
+                <RNScrollView {...this.props} />
+            </RNZoomScrollView>
+        );
+    }
+
     render() {
-        return <RNScrollView />;
+        return (
+            <RNZoomScrollView
+                {...this.props}
+            />
+        );
     }
 }
+
+const style = StyleSheet.create({
+    base: {
+        flex: 1
+    }
+});
