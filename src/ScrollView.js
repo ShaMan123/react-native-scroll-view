@@ -932,6 +932,7 @@ export default class ScrollView extends Component {
         return (
             <RNZoomScrollView
                 style={style.base}
+                {...this.props}
             >
                 <RNScrollView {...this.props} />
             </RNZoomScrollView>

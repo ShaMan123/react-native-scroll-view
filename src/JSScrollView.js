@@ -10,12 +10,14 @@ import {
     Platform,
     PixelRatio,
     I18nManager,
-    findNodeHandle
+    findNodeHandle,
 } from 'react-native';
 
 const screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
 const isRTL = I18nManager.isRTL;
 
+import { PanGestureHandler, PinchGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
+import * as _ from 'lodash';
 const ScrollEvents = {
     onMomentumScrollBegin: 'onMomentumScrollBegin',
     onMomentumScrollEnd: 'onMomentumScrollEnd',
@@ -27,7 +29,6 @@ const ScrollEvents = {
 const Events = {
     onLayout: 'onLayout',
     onContentSizeChange: 'onContentSizeChange',
-    onScrollAnimationEnd: 'onScrollAnimationEnd',
     ...ScrollEvents
     //onZoom: 'onZoom',
     //onZoomEnd: 'onZoomEnd'
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class ScrollView extends Component {
+export default class UpgradedScrollView extends Component {
     static propTypes = {
         //  zoom props
         bounces: PropTypes.bool,
@@ -120,7 +121,11 @@ export default class ScrollView extends Component {
             .reduce((combined, key) => {
                 combined[key] = PropTypes.func;
                 return combined;
-            }, {})
+            }, {}),
+
+        //  ref
+        panHandler: PropTypes.any,
+        pinchHandler: PropTypes.any
     }
 
     static defaultProps = {
@@ -155,22 +160,25 @@ export default class ScrollView extends Component {
             .reduce((combined, key) => {
                 combined[key] = () => { };
                 return combined;
-            }, {})
+            }, {}),
+
+        panHandler: React.createRef(),
+        pinchHandler: React.createRef()
     }
 
     static onMoveShouldSetResponderDistance = 100;
 
     constructor(props) {
         super(props);
-
+        /*
         const scale = new Animated.Value(props.zoomScale);
-        const clampedScale = new Animated.diffClamp(scale, props.minimumZoomScale, props.maximumZoomScale);
+        const clampedScale = Animated.diffClamp(scale, props.minimumZoomScale, props.maximumZoomScale);
 
         this._scaleValue = props.zoomScale;
         scale.addListener(({ value }) => {
             this._scaleValue = value;
         });
-
+        */
         const translate = new Animated.ValueXY({ x: 0, y: 0 });
         this._translateValue = { x: 0, y: 0 };
         translate.addListener((value) => {
@@ -226,7 +234,12 @@ export default class ScrollView extends Component {
         });
         */
 
-        this._animatedValues = { scale, clampedScale, translate, opacity, scrollIndicator, scrollIndicatorOpacity };
+        const trans = new Animated.ValueXY({ x: 0, y: 0 });
+        const baseScale = new Animated.Value(props.zoomScale);
+        const pinchScale = new Animated.Value(props.zoomScale);
+        const scale = new Animated.Value(props.zoomScale);
+
+        this._animatedValues = { scale, baseScale, clampedScale, translate, opacity, scrollIndicator, scrollIndicatorOpacity, trans };
 
         this._onLayout = this._onLayout.bind(this);
         this._startShouldSetResponder = this._startShouldSetResponder.bind(this);
@@ -236,12 +249,17 @@ export default class ScrollView extends Component {
         this._handleRelease = this._handleRelease.bind(this);
         this._loadPanResponder.call(this);
 
+        this._onStateChange = this._onStateChange.bind(this);
+        this._pinch = this._pinch.bind(this);
+        this._pan = this._pan.bind(this);
+
+
         this.style = StyleSheet.compose({
             opacity: this._animatedValues.opacity,
             transform: [
                 { scale: this._animatedValues.clampedScale },
-                { translateX: this._animatedValues.translate.x },
-                { translateY: this._animatedValues.translate.y },
+                //{ translateX: this._animatedValues.translate.x },
+                //{ translateY: this._animatedValues.translate.y },
                 { perspective: 1000 }
             ]
         });
@@ -585,10 +603,7 @@ export default class ScrollView extends Component {
                         scrollX: this._animatedValues.scrollIndicator.x,
                         scrollY: this._animatedValues.scrollIndicator.y
                     }
-                ],
-                () => {
-                    return { useNativeDriver: true };
-                })
+                ])
                 (null, {
                     scale,
                     ...clampedTranslations,
@@ -647,10 +662,7 @@ export default class ScrollView extends Component {
                         scrollX: this._animatedValues.scrollIndicator.x,
                         scrollY: this._animatedValues.scrollIndicator.y
                     }
-                ],
-                () => {
-                    return { useNativeDriver: true };
-                })
+                ])
                 (null, {
                     ...clampedTranslations,
                     scrollX: scrollIndicatorOffset.x,
@@ -659,15 +671,16 @@ export default class ScrollView extends Component {
         }
     }
 
-    _handleRelease(evt, gestureState) {
+    _handleRelease({ vx, vy } = this._gestureState) {
         const deceleration = this.getDecelerationRate();
         const clampedScale = this.getClampedScale();
         const clampedTranslate = this.getClampedTranslate();
         const didClamptranslate = this._translateValue.x !== clampedTranslate.x || this._translateValue.y !== clampedTranslate.y;
         const didShrink = this.props.bounces || (clampedScale < this._scaleStart && didClamptranslate && this._isZooming);
+
         const v = {
-            x: this._gestureState.vx / clampedScale,
-            y: this._gestureState.vy / clampedScale
+            x: vx / clampedScale,
+            y: vy / clampedScale
         };
 
         this._initialDistance = null;
@@ -679,7 +692,7 @@ export default class ScrollView extends Component {
 
         const animations = [];
 
-        if ((this._didTranslate.x || didShrink) && this._gestureState.vx) {
+        if ((this._didTranslate.x || didShrink) && typeof vx === 'number') {
             animations.push(
                 Animated.decay(this._animatedValues.translate.x, {
                     velocity: v.x,
@@ -697,7 +710,7 @@ export default class ScrollView extends Component {
                 );
             }
         }
-        if ((this._didTranslate.y || didShrink) && this._gestureState.vy) {
+        if ((this._didTranslate.y || didShrink) && typeof vy === 'number') {
             animations.push(
                 Animated.decay(this._animatedValues.translate.y, {
                     velocity: v.y,
@@ -842,17 +855,6 @@ export default class ScrollView extends Component {
         ]).start();
     }
 
-    /**
-     * 
-     * @param {string} eventType
-     * need to implement velocity
-     * can use:
-        const v = {
-            x: this._gestureState.vx / clampedScale,
-            y: this._gestureState.vy / clampedScale
-        };
-        
-     */
     _eventSender(eventType) {
         const { width, height } = this.state;
         const scale = this.getClampedScale();
@@ -864,12 +866,229 @@ export default class ScrollView extends Component {
             contentSize: { width: width * scale, height: height * scale },
             contentOffset: this.getScrollOffset(),
             contentInset: this.getContentInset(1),
-            velocity: { x: 0, y: 0 },
             zoomScale: scale
         };
         evt.nativeEvent = newNativeEvent;
         this.props[eventType](evt);
-        if (eventType === Events.onMomentumScrollEnd && this.props.onScrollAnimationEnd) this.props.onScrollAnimationEnd();
+    }
+
+    _onStateChange(e: GestureHandlerStateChangeEvent) {
+        console.log('_onStateChange', State.print(e.nativeEvent.state))
+        if (e.nativeEvent.state === State.ACTIVE) {
+            this._onStateActive(e);
+        }
+        else if (e.nativeEvent.oldState === State.ACTIVE) {
+            this._onStateEnd({
+                vx: e.nativeEvent.velocityX,
+                vy: e.nativeEvent.velocityY
+            });
+        }
+    }
+
+    _onStateActive(e: GestureHandlerStateChangeEvent) {
+        this.scrollResponderIsAnimating = true;
+        this._translateStart = {
+            x: this._translateValue.x,
+            y: this._translateValue.y
+        };
+        this._scaleStart = this.getClampedScale();
+        this._eventSender(Events.onScrollBeginDrag);
+
+        this._gestureState = {
+            x0: e.nativeEvent.absoluteX,
+            y0: e.nativeEvent.absoluteY,
+            dx: 0,
+            dy: 0,
+            vx: 0,
+            vy: 0
+        };
+
+        this.animateScrollIndicatorOpacity(1);
+    }
+
+    _onStateEnd({ vx, vy } = this._gestureState) {
+        const deceleration = this.getDecelerationRate();
+        const clampedScale = this.getClampedScale();
+        const clampedTranslate = this.getClampedTranslate();
+        const didClamptranslate = this._translateValue.x !== clampedTranslate.x || this._translateValue.y !== clampedTranslate.y;
+        const didShrink = this.props.bounces || (clampedScale < this._scaleStart && didClamptranslate && this._isZooming);
+
+        const v = {
+            x: vx / clampedScale,
+            y: vy / clampedScale
+        };
+
+        this._initialDistance = null;
+        this._initialScale = null;
+        this._isZooming = false;
+        this._directionalLock = null;
+
+        this._eventSender(Events.onScrollEndDrag);
+
+        const animations = [];
+        /*
+        if ((this._didTranslate.x || didShrink) && typeof vx === 'number') {
+            animations.push(
+                Animated.decay(this._animatedValues.translate.x, {
+                    velocity: v.x,
+                    deceleration,
+                    useNativeDriver: true
+                })
+            );
+            if (this._indicatorLayout.width > 0) {
+                animations.push(
+                    Animated.decay(this._animatedValues.scrollIndicator.x, {
+                        velocity: -v.x * this.state.width / this._indicatorLayout.width,
+                        deceleration,
+                        useNativeDriver: true
+                    })
+                );
+            }
+        }
+        if ((this._didTranslate.y || didShrink) && typeof vy === 'number') {
+            animations.push(
+                Animated.decay(this._animatedValues.translate.y, {
+                    velocity: v.y,
+                    deceleration,
+                    useNativeDriver: true
+                })
+            );
+            if (this._indicatorLayout.height > 0) {
+                animations.push(
+                    Animated.decay(this._animatedValues.scrollIndicator.y, {
+                        velocity: -v.y * this.state.height / this._indicatorLayout.height,
+                        deceleration,
+                        useNativeDriver: true
+                    })
+                );
+            }
+        }
+        */
+        this._runningAnimations = animations;
+        //this._runningScrollAnimations = [animations[1], animations[3]];
+
+        /*
+        if (this.props.bouncesZoom && this._scaleValue !== clampedScale) {
+            animations.push(
+                Animated.spring(this._animatedValues.scale, {
+                    toValue: clampedScale,
+                    useNativeDriver: true
+                }));
+        }
+        */
+        const timeStart = new Date();
+        const dissolveScrollIndicators = () => {
+            const t = setTimeout(() => {
+                this.animateScrollIndicatorOpacity(0);
+                clearTimeout(t);
+            }, Math.max(500 - (new Date() - timeStart), 0));
+        };
+
+        if (animations.length > 0) {
+            this._eventSender(Events.onMomentumScrollBegin);
+            Animated.parallel(animations)
+                .start(({ finished }) => {
+                    this._didTranslate = { x: false, y: false };
+                    dissolveScrollIndicators();
+                    if (finished) {
+                        this._eventSender(Events.onMomentumScrollEnd);
+                        this.scrollResponderIsAnimating = false;
+                    }
+                });
+        }
+        else {
+            this._didTranslate = { x: false, y: false };
+            dissolveScrollIndicators();
+        }
+    }
+
+    _pan(e: PanGestureHandlerGestureEvent) {
+        console.log('dfsgdfg', e.nativeEvent)
+        const { velocityX, velocityY, translationX, translationY } = e.nativeEvent;
+        const dx = translationX;
+        const dy = translationY;
+        const vx = velocityX;
+        const vy = velocityY;
+        const scale = this.getClampedScale(this._scaleValue);
+        const translations = {
+            x: dx / scale + this._translateStart.x,
+            y: dy / scale + this._translateStart.y
+        };
+        const m = Math.abs(vy) / Math.abs(vx);
+        const clampedTranslations = this.getClampedTranslate(translations);
+
+        if (this.props.directionalLockEnabled) {
+            if (!this._directionalLock) {
+                this._directionalLock = {
+                    value: m < 0.5 ? directionalLock.horizontal : m > 2 ? directionalLock.vertical : null,
+                    ...clampedTranslations
+                };
+            }
+            switch (this._directionalLock.value) {
+                case directionalLock.horizontal:
+                    clampedTranslations.y = this._directionalLock.y;
+                    break;
+                case directionalLock.vertical:
+                    clampedTranslations.x = this._directionalLock.x;
+                    break;
+            }
+        }
+
+        this._didTranslate = {
+            x: translations.x === clampedTranslations.x,
+            y: translations.y === clampedTranslations.y
+        };
+
+        this._gestureState = { dx, dy, vx, vy };
+
+        const scrollIndicatorOffset = this.getScrollIndicatorOffset(scale, clampedTranslations);
+
+        return Animated.event(
+            [{
+                x: this._animatedValues.translate.x,
+                y: this._animatedValues.translate.y,
+                scrollX: this._animatedValues.scrollIndicator.x,
+                scrollY: this._animatedValues.scrollIndicator.y
+            }])
+            ({
+                ...clampedTranslations,
+                scrollX: scrollIndicatorOffset.x,
+                scrollY: scrollIndicatorOffset.y
+            });
+    }
+
+    _pinch(e: PinchGestureHandlerGestureEvent) {
+        const zoom = e.nativeEvent.scale;
+        if (!this._initialScale) this._initialScale = zoom - this._scaleValue;
+        //const scale = this.props.bouncesZoom ? zoom - this._initialScale : this.getClampedScale(zoom - this._initialScale);
+        const scale = this.getClampedScale(zoom - this._initialScale);
+        const clampedTranslations = this.getClampedTranslate(this._translateStart, scale);
+        this._translateStart = clampedTranslations;
+
+        const scrollIndicatorOffset = this.getScrollIndicatorOffset(scale, clampedTranslations);
+
+        this._isZooming = true;
+
+        return Animated.event(
+            [{
+                scale: this._animatedValues.scale,
+                x: this._animatedValues.translate.x,
+                y: this._animatedValues.translate.y,
+                scrollX: this._animatedValues.scrollIndicator.x,
+                scrollY: this._animatedValues.scrollIndicator.y
+            }])
+            ({
+                scale,
+                ...clampedTranslations,
+                scrollX: scrollIndicatorOffset.x,
+                scrollY: scrollIndicatorOffset.y
+            });
+    }
+
+    _onPinchStateChange = (e: GestureHandlerStateChangeEvent) => {
+        if (e.nativeEvent.oldState === State.ACTIVE) {
+            this._animatedValues.scale.flattenOffset(e.nativeEvent.scale);
+        }
     }
 
     render() {
@@ -881,37 +1100,81 @@ export default class ScrollView extends Component {
             indicatorStyle,
             style,
             contentContainerStyle,
+            scrollEnabled,
+            pinchGestureEnabled,
+            waitFor,
+            simultaneousHandlers,
             children,
             ...props
         } = this.props;
 
         return (
-            <View style={style}>
-                <Animated.View
-                    ref={ref => this.ref = ref}
-                    //{...this._panResponder.panHandlers}
-                    {...this._responder}
-                    {...props}
-                    onLayout={this._onLayout}
-                    style={[contentContainerStyle, this.style]}
+            <Animated.View
+                style={{
+                    flex: 1,
+                    transform: [
+                        { translateX: this._animatedValues.trans.x },
+                        { translateY: this._animatedValues.trans.y },
+                        { perspective: 1000 }
+                    ]
+                }}
+                collapsable={false}
+            >
+                <PanGestureHandler
+                    onGestureEvent={Animated.event([{ nativeEvent: { translationX: this._animatedValues.trans.x, translationY: this._animatedValues.trans.y } }], { useNativeDriver: true })}
+                    //onGestureEvent={this._pan}
+                    onHandlerStateChange={this._onStateChange}
+                    //enabled={scrollEnabled}
+                    //maxPointers={1}
+                    ref={this.props.panHandler}
+                //waitFor={[...(waitFor || []), this.props.pinchHandler]}
+                //simultaneousHandlers={simultaneousHandlers}
                 >
-                    {children}
-                </Animated.View>
-                {showsHorizontalScrollIndicator &&
                     <Animated.View
-                        onLayout={this._onIndicatorLayout.bind(this, 'width')}
-                        pointerEvents='none'
-                        style={[styles.indicator, styles.horizontalScrollIndicator, indicatorStyle, horizontalIndicatorStyle, this.indicatorStyles.horizontal]}
-                    />
-                }
-                {showsVerticalScrollIndicator &&
-                    <Animated.View
-                        onLayout={this._onIndicatorLayout.bind(this, 'height')}
-                        pointerEvents='none'
-                        style={[styles.indicator, styles.verticalScrollIndicator, indicatorStyle, verticalIndicatorStyle, this.indicatorStyles.vertical]}
-                    />
-                }
-            </View>
+                        style={[style, {
+                            transform: [
+                                { scale: this._animatedValues.scale },
+                                { perspective: 1000 }
+                            ]
+                        }]}
+                        ref={ref => this.ref = ref}
+                        collapsable={false}
+                    >
+                        <PinchGestureHandler
+                            //onGestureEvent={this._pinch}
+                            onGestureEvent={Animated.event([{ nativeEvent: { scale: this._animatedValues.scale } }], { useNativeDriver: true })}
+                            onHandlerStateChange={this._onStateChange}
+                            //enabled={pinchGestureEnabled}
+                            ref={this.props.pinchHandler}
+                        //waitFor={waitFor}
+                        //simultaneousHandlers={simultaneousHandlers}
+                        >
+                            <Animated.View
+                                {...props}
+                                onLayout={this._onLayout}
+                                style={contentContainerStyle}
+                            >
+                                {children}
+                            </Animated.View>
+                        </PinchGestureHandler>
+                        {showsHorizontalScrollIndicator &&
+                            <Animated.View
+                                onLayout={this._onIndicatorLayout.bind(this, 'width')}
+                                pointerEvents='none'
+                                style={[styles.indicator, styles.horizontalScrollIndicator, indicatorStyle, horizontalIndicatorStyle, this.indicatorStyles.horizontal]}
+                            />
+                        }
+                        {showsVerticalScrollIndicator &&
+                            <Animated.View
+                                onLayout={this._onIndicatorLayout.bind(this, 'height')}
+                                pointerEvents='none'
+                                style={[styles.indicator, styles.verticalScrollIndicator, indicatorStyle, verticalIndicatorStyle, this.indicatorStyles.vertical]}
+                            />
+                        }
+                    </Animated.View>
+
+                </PanGestureHandler>
+            </Animated.View>
         );
     }
 }

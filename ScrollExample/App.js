@@ -8,6 +8,7 @@
 
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView } from 'react-native';
+import { createNativeWrapper, State } from 'react-native-gesture-handler';
 
 const instructions = Platform.select({
     ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -16,19 +17,23 @@ const instructions = Platform.select({
         'Shake or press menu button for dev menu',
 });
 
-import ScrollView from 'react-native-scroll-view';
+import CustomView from 'react-native-scroll-view';
+
+const GHCV = createNativeWrapper(CustomView, {shouldActivateOnStart: true, enabled: false});
 
 type Props = {};
 export default class App extends Component<Props> {
-    render() {
+    render1() {
         return (
-            <RNScrollView
+            <CustomView
                 style={{ flex: 1 }}
                 //contentContainerStyle={styles.container}
                 onScroll={e => console.log(e.nativeEvent)}
                 scrollEnabled
+                minimumZoomScale={1}
+                maximumZoomScale={5}
             >
-                
+                <View>
                     <Text style={styles.welcome}>Welcome to React Native!</Text>
                     <Text style={styles.instructions}>To get started, edit App.js</Text>
                     <Text style={styles.instructions}>{instructions}</Text>
@@ -40,7 +45,19 @@ export default class App extends Component<Props> {
                         style={{ width: 300, height: 300 }}
                         source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
                     />
-            </RNScrollView>
+                </View>
+            </CustomView>
+        );
+    }
+
+    render() {
+        return (
+            <GHCV
+                //pointerEvents="none"
+                onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
+                onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
+                //enabled={false}
+            />
         );
     }
 }
