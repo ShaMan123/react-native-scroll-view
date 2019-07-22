@@ -95,7 +95,6 @@ public class Event extends com.facebook.react.uimanager.events.Event {
     }
 
     public void dispatch(){
-        Log.d(TAG, "dispatch: " + mExtraData);
         mContext
                 .getJSModule(RCTEventEmitter.class)
                 .receiveEvent(getViewTag(), getEventName(), mExtraData);

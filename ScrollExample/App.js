@@ -23,32 +23,6 @@ const GHCV = View;//createNativeWrapper(CustomView, {shouldActivateOnStart: true
 
 type Props = {};
 export default class App extends Component<Props> {
-    render_() {
-        return (
-            <CustomView
-                //style={{ flex: 1 }}
-                //contentContainerStyle={styles.container}
-                onScroll={e => console.log(e.nativeEvent)}
-                scrollEnabled
-                minimumZoomScale={1}
-                maximumZoomScale={5}
-            >
-                <View
-                    pointerEvents="none"
-                >
-                    <Image
-                        style={{ width: 300, height: 300 }}
-                        source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
-                    />
-                    <Image
-                        style={{ width: 300, height: 300 }}
-                        source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
-                    />
-                </View>
-            </CustomView>
-        );
-    }
-
     render() {
         return (
             <CustomView
@@ -56,9 +30,41 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flex:1 }}
+                style={{ backgroundColor: 'red' }}
+                // minimumZoomScale={0.15}
+                maximumZoomScale={5}
+                //dispatchScrollEvents={false}
+            >
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+            </CustomView>
+        );
+    }
+
+    render1() {
+        return (
+            <CustomView
+                //pointerEvents="none"
+                onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
+                onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
+                //enabled={false}
+                style={{ backgroundColor: 'red', flexWrap: 'wrap' }}
                 minimumZoomScale={0.15}
-                maximumZoomScale={3}
+                maximumZoomScale={5}
 
             >
                 <Image

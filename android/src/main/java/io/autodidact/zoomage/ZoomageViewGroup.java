@@ -1,6 +1,7 @@
 package io.autodidact.zoomage;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.facebook.react.bridge.WritableMap;
@@ -12,6 +13,7 @@ public class ZoomageViewGroup extends ReactViewGroup implements Event.OnScaleEve
     public static String TAG = "RNZoomageView";
     private Zoomage transformHandler;
     private ThemedReactContext mContext;
+    private boolean dispatchScrollEvents = true;
     /*
     public RNZoomageManager viewManager;
 
@@ -28,6 +30,9 @@ public class ZoomageViewGroup extends ReactViewGroup implements Event.OnScaleEve
         transformHandler.setDoubleTapToZoom(true);
         transformHandler.setTranslatable(true);
         transformHandler.setAutoResetMode(AutoResetMode.NEVER);
+        transformHandler.setRestrictBounds(true);
+
+        //setLayerType(LAYER_TYPE_SOFTWARE, null);
 
         //ViewConfiguration configuration = ViewConfiguration.get(context);
     }
@@ -56,8 +61,13 @@ public class ZoomageViewGroup extends ReactViewGroup implements Event.OnScaleEve
         dispatchEvent(Event.EventNames.ON_SCROLL, eventData);
     }
 
+    public void setDispatchScrollEvents(boolean dispatchScrollEvents) {
+        this.dispatchScrollEvents = dispatchScrollEvents;
+    }
+
     private void dispatchEvent(@Event.EventNames String eventName, WritableMap eventData){
-        Event ev = Event.obtain(this, eventName, eventData);
+        WritableMap e = dispatchScrollEvents ? transformHandler.getDataExtractor().extractEventData() : eventData;
+        Event ev = Event.obtain(this, eventName, e);
         ev.dispatch();
     }
 

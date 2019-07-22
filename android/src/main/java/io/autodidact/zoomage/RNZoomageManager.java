@@ -37,6 +37,11 @@ public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
         view.getTransformHandler().setMaximunScale(value);
     }
 
+    @ReactProp(name = "dispatchScrollEvents", defaultBoolean = true)
+    public void setEventType(ZoomageViewGroup view, boolean value){
+        view.setDispatchScrollEvents(value);
+    }
+
     @Override
     public @Nullable
     Map getExportedCustomDirectEventTypeConstants() {

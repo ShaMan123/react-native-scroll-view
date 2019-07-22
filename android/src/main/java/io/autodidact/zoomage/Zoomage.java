@@ -77,9 +77,11 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
     private boolean singleTapDetected = false;
 
     private ZoomageViewGroup view;
+    private DataExtractor dataExtractor;
 
     public Zoomage(Context context, ZoomageViewGroup view) {
         this.view = view;
+        dataExtractor = new DataExtractor(this);
         init(context, null);
     }
 
@@ -323,6 +325,18 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
         return previousScaleFactor;
     }
 
+    public PointF getCurrentTranslate(){
+        float[] values = new float[9];
+        getMatrix().getValues(values);
+        return new PointF(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
+    }
+
+    public float getCurrentScale(){
+        float[] values = new float[9];
+        getMatrix().getValues(values);
+        return values[Matrix.MSCALE_X];
+    }
+
     private int getWidth(){
         return view.getWidth();
     }
@@ -339,6 +353,14 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
         outMatrix.set(src);
         view.postInvalidateOnAnimation();
         return;
+    }
+
+    public ZoomageViewGroup getView() {
+        return view;
+    }
+
+    public DataExtractor getDataExtractor() {
+        return dataExtractor;
     }
 
     private ViewParent getParent(){
@@ -445,7 +467,7 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
 
                 if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                     scaleBy = 1f;
-                    //resetImage();
+                    resetImage();
                 }
             }
 
@@ -566,6 +588,9 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
                 values[Matrix.MSCALE_Y] = values[Matrix.MSCALE_Y] + ysdiff * val;
                 activeMatrix.setValues(values);
                 setMatrix(activeMatrix);
+
+                WritableMap eventData = dataExtractor.extractEventData(scaleDetector, animation);
+                view.onScroll(eventData);
             }
         });
 
@@ -770,7 +795,7 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
             scaleBy = calculatedMaxScale / matrixValues[Matrix.MSCALE_X];
         }
 
-        WritableMap eventData = DataExtractor.extractEventData(this, detector);
+        WritableMap eventData = dataExtractor.extractEventData(detector);
         view.onScale(eventData);
 
         return false;
@@ -780,7 +805,7 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         startScale = matrixValues[Matrix.MSCALE_X];
 
-        WritableMap eventData = DataExtractor.extractEventData(this, detector);
+        WritableMap eventData = dataExtractor.extractEventData(detector);
         view.onScaleBegin(eventData);
 
         return true;
@@ -790,20 +815,19 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
     public void onScaleEnd(ScaleGestureDetector detector) {
         scaleBy = 1f;
 
-        WritableMap eventData = DataExtractor.extractEventData(this, detector);
+        WritableMap eventData = dataExtractor.extractEventData(detector);
         view.onScaleEnd(eventData);
     }
 
     private final GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
-        private long lastEventTime = -1;
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if(lastEventTime == -1) lastEventTime = e2.getEventTime();
-            long dt = e2.getEventTime() - lastEventTime;
-            WritableMap eventData = DataExtractor.extractEventData(e1, e2, distanceX, distanceY, dt);
+            boolean val = super.onScroll(e1, e2, distanceX, distanceY);
+
+            WritableMap eventData = dataExtractor.extractEventData(e1, e2, distanceX, distanceY);
             view.onScroll(eventData);
 
-            return super.onScroll(e1, e2, distanceX, distanceY);
+            return val;
         }
 
         @Override
