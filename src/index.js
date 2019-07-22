@@ -3,7 +3,7 @@ import {
     Platform,
     ScrollView as RNScrollView,
 } from 'react-native';
-import ScrollViewImplementation from './ScrollView';
+import ScrollViewImplementation from './ZoomageView';
 
 const DefaultScrollView = Platform.OS === 'ios' ? RNScrollView : ScrollViewImplementation;
 
