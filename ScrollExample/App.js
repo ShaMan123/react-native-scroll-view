@@ -55,7 +55,7 @@ export default class App extends Component<Props> {
         );
     }
 
-    render1() {
+    render() {
         return (
             <CustomView
                 //pointerEvents="none"

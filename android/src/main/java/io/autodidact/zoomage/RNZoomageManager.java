@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
+public class RNZoomageManager extends ViewGroupManager<ZoomableView> {
     @Nonnull
     @Override
     public String getName() {
@@ -21,6 +21,13 @@ public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
         super();
     }
 
+    @Nonnull
+    @Override
+    protected ZoomableView createViewInstance(@Nonnull ThemedReactContext reactContext) {
+        return new ZoomableView(reactContext);
+    }
+
+    /*
     @Nonnull
     @Override
     protected ZoomageViewGroup createViewInstance(@Nonnull ThemedReactContext reactContext) {
@@ -41,6 +48,8 @@ public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
     public void setEventType(ZoomageViewGroup view, boolean value){
         view.setDispatchScrollEvents(value);
     }
+
+    */
 
     @Override
     public @Nullable
