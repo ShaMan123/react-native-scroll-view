@@ -50,7 +50,7 @@ export default class App extends Component<Props> {
                 <Image
                     style={{ width: 300, height: 300 }}
                     source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
-                />
+                    />
             </CustomView>
         );
     }
@@ -62,7 +62,7 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flexWrap: 'wrap' }}
+                style={{ backgroundColor: 'red', flex: 1 }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={5}
 

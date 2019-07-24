@@ -59,6 +59,11 @@ public class DataExtractor {
         return dataExtractor.extractEventData();
     }
 
+    public WritableMap extractEventData(float scale, PointF translation, PointF velocity){
+        JSScrollEventDataExtractor dataExtractor = new JSScrollEventDataExtractor(handler, scale, translation, velocity);
+        return dataExtractor.extractEventData();
+    }
+
     public WritableMap extractEventData(){
         JSScrollEventDataExtractor dataExtractor = new JSScrollEventDataExtractor(handler, lastScaleDataExtractor, lastTranslateDataExtractor);
         return dataExtractor.extractEventData();

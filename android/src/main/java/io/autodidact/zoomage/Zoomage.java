@@ -1,5 +1,6 @@
 package io.autodidact.zoomage;
 
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
 
@@ -40,6 +41,7 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
     private Matrix matrix = new Matrix();
     private Matrix startMatrix = new Matrix();
     private Matrix outMatrix = new Matrix();
+    private Matrix prevOutMatrix = new Matrix();
 
     private float[] matrixValues = new float[9];
     private float[] startValues = null;
@@ -325,16 +327,28 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
         return previousScaleFactor;
     }
 
+    public float getCurrentScale(){
+        float[] values = new float[9];
+        outMatrix.getValues(values);
+        return values[Matrix.MSCALE_X];
+    }
+
+    public float getPreviousScale(){
+        float[] values = new float[9];
+        prevOutMatrix.getValues(values);
+        return values[Matrix.MSCALE_X];
+    }
+
     public PointF getCurrentTranslate(){
         float[] values = new float[9];
-        getMatrix().getValues(values);
+        outMatrix.getValues(values);
         return new PointF(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
     }
 
-    public float getCurrentScale(){
+    public PointF getPreviousTranslate(){
         float[] values = new float[9];
-        getMatrix().getValues(values);
-        return values[Matrix.MSCALE_X];
+        prevOutMatrix.getValues(values);
+        return new PointF(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
     }
 
     private int getWidth(){
@@ -350,6 +364,7 @@ public class Zoomage implements ScaleGestureDetector.OnScaleGestureListener {
     }
 
     private void setMatrix(Matrix src){
+        prevOutMatrix.set(outMatrix);
         outMatrix.set(src);
         view.postInvalidateOnAnimation();
         return;
