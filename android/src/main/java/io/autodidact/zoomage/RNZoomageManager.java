@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
+public class RNZoomageManager extends ViewGroupManager<RNZoomView> {
     @Nonnull
     @Override
     public String getName() {
@@ -30,10 +30,10 @@ public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
 
     @Nonnull
     @Override
-    protected ZoomageViewGroup createViewInstance(@Nonnull ThemedReactContext reactContext) {
-        return new ZoomageViewGroup(reactContext);
+    protected RNZoomView createViewInstance(@Nonnull ThemedReactContext reactContext) {
+        return new RNZoomView(reactContext);
     }
-
+/*
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)
     public void setMinimumZoomScale(ZoomageViewGroup view, float value){
         view.getTransformHandler().setMinimunScale(value);
@@ -48,7 +48,7 @@ public class RNZoomageManager extends ViewGroupManager<ZoomageViewGroup> {
     public void setEventType(ZoomageViewGroup view, boolean value){
         view.setDispatchScrollEvents(value);
     }
-
+*/
     @Override
     public @Nullable
     Map getExportedCustomDirectEventTypeConstants() {
