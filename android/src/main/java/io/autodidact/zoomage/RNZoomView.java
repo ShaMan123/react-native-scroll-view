@@ -203,10 +203,7 @@ public class RNZoomView extends ReactViewGroup {
         public PointF clampedDistance(float distanceX, float distanceY){
 
             PointF d = new PointF(clampRawDistance(distanceX), clampRawDistance(distanceY));
-            RectF actualLayout = new RectF(layout.left, layout.top, layout.width() * mScale, layout.height() * mScale);
-            actualLayout.offset((actualLayout.width() - layout.width()) * -0.5f, (actualLayout.height() - layout.height()) * -0.5f);
-
-            actualLayout.offset(-displacement.x, -displacement.y);
+            RectF actualLayout = getActualLayout();
             RectF displacementBounds = new RectF(actualLayout.left - layout.left, actualLayout.top - layout.top, actualLayout.right - layout.right,actualLayout.bottom - layout.bottom);
             Log.d(TAG, "    layout:  "+ layout.toString() + "    actual:  " + actualLayout.toString());
 
