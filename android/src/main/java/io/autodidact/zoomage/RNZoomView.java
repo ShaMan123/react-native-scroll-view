@@ -103,6 +103,13 @@ public class RNZoomView extends ReactViewGroup {
         return true;
     }
 
+    public RectF getActualLayout(){
+        RectF actualLayout = new RectF(layout.left, layout.top, layout.width() * mScale, layout.height() * mScale);
+        actualLayout.offset((actualLayout.width() - layout.width()) * -0.5f, (actualLayout.height() - layout.height()) * -0.5f);
+        actualLayout.offset(-displacement.x, -displacement.y);
+        return actualLayout;
+    }
+
     public static float clamp(float min, float value, float max){
         return Math.max(min, Math.min(value, max));
     }
@@ -136,7 +143,8 @@ public class RNZoomView extends ReactViewGroup {
             float prevScale = mScale;
             float clampedScaleFactor = clampScaleFactor(detector.getScaleFactor());
             mScale *= clampedScaleFactor;
-            ScaleAnimation scaleAnimation = new ScaleAnimation(previousScaleFactor, clampedScaleFactor, previousScaleFactor, clampedScaleFactor, getWidth()*0.5f, getHeight()*0.5f);
+            RectF actualLayout = getActualLayout();
+            ScaleAnimation scaleAnimation = new ScaleAnimation(previousScaleFactor, clampedScaleFactor, previousScaleFactor, clampedScaleFactor, actualLayout.centerX(), actualLayout.centerY());
             animationSet.addAnimation(scaleAnimation);
             previousScaleFactor = clampedScaleFactor;
             return scaleAnimation.willChangeBounds();
@@ -223,8 +231,15 @@ public class RNZoomView extends ReactViewGroup {
 */
             PointF center = new PointF(actualLayout.centerX(), actualLayout.centerY());
             PointF viewPortCenter = new PointF(layout.centerX(), layout.centerY());
-            boolean xInBounds = actualLayout.left < 0 && actualLayout.right - viewPort.width() > 0;
-            boolean yInBounds = actualLayout.top < 0 && actualLayout.bottom - viewPort.height() > 0;
+
+            boolean xInViewBounds = actualLayout.left - layout.left <= 0 && actualLayout.right - layout.right >= 0;
+            boolean yInViewBounds = actualLayout.top - layout.top <= 0 && actualLayout.bottom - layout.bottom >= 0;
+
+            boolean xInViewPort = actualLayout.left - layout.left <= 0 && actualLayout.right - viewPort.right >= 0;
+            boolean yInViewPort = actualLayout.top - layout.top <= 0 && actualLayout.bottom - viewPort.bottom >= 0;
+
+            boolean xInBounds = actualLayout.left - Math.max(layout.left, viewPort.left) <= 0 && actualLayout.right - Math.min(layout.right, viewPort.right) >= 0;
+            boolean yInBounds = actualLayout.top - Math.max(layout.top, viewPort.top) <= 0 && actualLayout.bottom - Math.min(layout.bottom, viewPort.bottom) >= 0;
 
             Log.d(TAG, "x in bounds: " + xInBounds);
             Log.d(TAG, "y in bounds: " + yInBounds);
