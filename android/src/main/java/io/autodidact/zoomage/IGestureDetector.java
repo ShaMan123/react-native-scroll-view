@@ -29,7 +29,7 @@ public interface IGestureDetector {
         RectF getClippingRect();
         PointF getTopLeftMaxDisplacement();
         PointF getBottomRightMaxDisplacement();
-        PointF clampOffset(PointF offset);
+        PointF clampOffset(PointF distance, PointF offset);
 
         RectF getTransformedRect();
     }

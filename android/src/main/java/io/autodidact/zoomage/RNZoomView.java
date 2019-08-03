@@ -17,7 +17,6 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     public static String TAG = RNZoomView.class.getSimpleName();
     IGestureDetector combinedGestureDetector;
     RectF layout = new RectF();
-    RectF dst = new RectF();
     Rect mViewPort;
 
     RNZoomView(ThemedReactContext context){
@@ -75,6 +74,7 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
 
     public RectF out(/*boolean relative*/){
         RectF src = new RectF(absLayout());
+        RectF dst = new RectF();
         /*if(relative)*/ src.offsetTo(0, 0);
         absMatrix().mapRect(dst, src);
         return dst;
@@ -109,7 +109,7 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
 
     @Override
     public void onChange(Matrix matrix) {
-        matrix.mapRect(dst);
+        //matrix.mapRect(dst);
         postInvalidateOnAnimation();
     }
 
@@ -159,23 +159,31 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     public PointF getTopLeftMaxDisplacement() {
         RectF o = getTransformedRect();
         RectF clippingRect = getClippingRect();
-        return new PointF(o.left - clippingRect.left, o.top - clippingRect.top);
+        Log.d(TAG, "getTopLeftMaxDisplacement: " + o + "  " + clippingRect);
+        return new PointF(Math.min(o.left - clippingRect.left, 0), Math.min(o.top - clippingRect.top, 0));
     }
 
     @Override
     public PointF getBottomRightMaxDisplacement() {
         RectF o = getTransformedRect();
         RectF clippingRect = getClippingRect();
-        return new PointF(o.right - clippingRect.right, o.bottom - clippingRect.bottom);
+        return new PointF(Math.max(o.right - clippingRect.right, 0), Math.max(o.bottom - clippingRect.bottom, 0));
     }
 
     @Override
-    public PointF clampOffset(PointF offset) {
+    public PointF clampOffset(PointF distance, PointF offset) {
         PointF topLeft = getTopLeftMaxDisplacement();
         PointF bottomRight = getBottomRightMaxDisplacement();
-        return null;
-    }
+        topLeft.offset(-distance.x, -distance.y);
+        bottomRight.offset(-distance.x, -distance.y);
 
+        Log.d(TAG, "clampOffset: " + topLeft + "  " + offset + "  " + bottomRight);
+        float offsetX = offset.x < 0 ? Math.min(topLeft.x, offset.x) : Math.max(bottomRight.x, offset.x);
+        float offsetY = offset.y < 0 ? Math.min(topLeft.y, offset.y) : Math.max(bottomRight.y, offset.y);
+
+        return offset;
+        //return new PointF(offsetX, offsetY);
+    }
 
 
     public void clamp(PointF displacement){

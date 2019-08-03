@@ -54,6 +54,7 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
         if(action == MotionEvent.ACTION_UP) { mVelocityTracker.recycle(); }
 
         lastDisplacement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
+        lastDisplacement.set(gestureHelper.clampOffset(displacement, lastDisplacement));
         matrix.postTranslate(lastDisplacement.x, lastDisplacement.y);
 
         gestureHelper.onChange(matrix);
