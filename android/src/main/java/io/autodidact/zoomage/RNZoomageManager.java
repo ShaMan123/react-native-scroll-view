@@ -28,17 +28,17 @@ public class RNZoomageManager extends ViewGroupManager<RNZoomView> {
     }
 /*
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)
-    public void setMinimumZoomScale(ZoomageViewGroup view, float value){
+    public void setMinimumZoomScale(RNZoomView view, float value){
         view.getTransformHandler().setMinimunScale(value);
     }
 
     @ReactProp(name = "maximumZoomScale", defaultFloat = 3.0f)
-    public void setMaximumZoomScale(ZoomageViewGroup view, @Nullable float value){
+    public void setMaximumZoomScale(RNZoomView view, @Nullable float value){
         view.getTransformHandler().setMaximunScale(value);
     }
 
     @ReactProp(name = "dispatchScrollEvents", defaultBoolean = true)
-    public void setEventType(ZoomageViewGroup view, boolean value){
+    public void setEventType(RNZoomView view, boolean value){
         view.setDispatchScrollEvents(value);
     }
 */

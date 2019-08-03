@@ -3,6 +3,7 @@ package io.autodidact.zoomage;
 import android.graphics.Matrix;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
+import android.view.View;
 
 import androidx.annotation.StringDef;
 import androidx.core.util.Pools;
@@ -17,8 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import javax.annotation.Nullable;
-
-import static io.autodidact.zoomage.Zoomage.TAG;
 
 public class Event extends com.facebook.react.uimanager.events.Event {
     public static interface OnScaleEvent {
@@ -43,7 +42,7 @@ public class Event extends com.facebook.react.uimanager.events.Event {
     private static final Pools.SynchronizedPool<Event> EVENTS_POOL =
             new Pools.SynchronizedPool<>(TOUCH_EVENTS_POOL_SIZE);
 
-    public static Event obtain(ZoomageViewGroup view, @EventNames String eventName, WritableMap dataExtractor) {
+    public static Event obtain(View view, @EventNames String eventName, WritableMap dataExtractor) {
         Event event = EVENTS_POOL.acquire();
         if (event == null) {
             event = new Event(eventName);
@@ -60,7 +59,7 @@ public class Event extends com.facebook.react.uimanager.events.Event {
     private String mEventName;
     private ReactContext mContext;
 
-    private void init(ZoomageViewGroup view, WritableMap dataExtractor) {
+    private void init(View view, WritableMap dataExtractor) {
         super.init(view.getId());
         if (dataExtractor == null) {
             dataExtractor = Arguments.createMap();
