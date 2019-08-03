@@ -41,6 +41,7 @@ public class RNZoomView extends ViewGroup {
     Matrix matrix = new Matrix();
     RectF layout = new RectF();
     RectF dst = new RectF();
+    Rect mViewPort;
 
     RNZoomView(ThemedReactContext context){
         super(context);
@@ -52,8 +53,8 @@ public class RNZoomView extends ViewGroup {
             }
         }).setRotationEnabled(false);
 
-        Rect mViewPort = new MeasureUtility(context).getUsableViewPort();
-        matrix.preTranslate(mViewPort.left, mViewPort.top);
+        mViewPort = new MeasureUtility(context).getUsableViewPort();
+
     }
 
     @Override
@@ -61,27 +62,45 @@ public class RNZoomView extends ViewGroup {
         //if(super.onTouchEvent(event)) return true;
         requestDisallowInterceptTouchEvent(true);
         matrixGestureDetector.onTouchEvent(event);
+
+        Log.d(TAG, "onTouchEvent: " + contains());
         return true;
     }
 
+    public boolean contains(){
+        return out().contains(absLayout());
+    }
+
+    public Matrix absMatrix(){
+        Matrix m = new Matrix();
+        m.preTranslate(mViewPort.left, mViewPort.top);
+        m.preTranslate(layout.left, layout.top);
+        m.postConcat(matrix);
+        return m;
+    }
+
+    public RectF absLayout(){
+        RectF out = new RectF(layout);
+        out.offset(mViewPort.left, mViewPort.top);
+        return out;
+    }
+
     public RectF out(){
-        RectF src = new RectF(layout);
+        RectF src = new RectF(absLayout());
         src.offsetTo(0, 0);
-        matrix.mapRect(dst, src);
-        dst.offsetTo(0, 0);
-        matrix.mapRect(dst);
+        absMatrix().mapRect(dst, src);
         return dst;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        RectF dst = out();
-
+        canvas.setMatrix(new Matrix());
+        RectF dst1 = out();
         Paint p = new Paint();
         p.setColor(Color.BLUE);
-        canvas.drawRect(dst, p);
+        canvas.drawRect(dst1, p);
 
-        canvas.setMatrix(matrix);
+        canvas.setMatrix(absMatrix());
         super.onDraw(canvas);
 
     }
@@ -89,6 +108,6 @@ public class RNZoomView extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         layout.set(l,t,r,b);
-        matrix.preTranslate(l, t);
+        Log.d(TAG, "onLayout: " + layout);
     }
 }
