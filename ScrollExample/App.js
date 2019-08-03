@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
@@ -22,10 +22,14 @@ const instructions = Platform.select({
 
 import CustomView from 'react-native-scroll-view';
 const GHCV = createNativeWrapper(CustomView, { shouldActivateOnStart: true, disallowInterruption: true });
-const GHViewPager = createNativeWrapper(ViewPager, { shouldActivateOnStart: true, disallowInterruption: true });
+const GHViewPager = createNativeWrapper(ViewPager, { shouldActivateOnStart: false, disallowInterruption: false });
 
 type Props = {};
 export default class App extends Component<Props> {
+    state = { a: 150 }
+    componentDidMount() {
+        setTimeout(() => this.setState({ a: 200 }), 5000);
+    }
     render() {
         return (
             <View style={{ flex: 1 }}>
@@ -62,22 +66,25 @@ export default class App extends Component<Props> {
 
     renderPage(index) {
         return (
-            <GHCV
-                //pointerEvents="none"
-                onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
-                onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
-                //enabled={false}
-                style={{ backgroundColor: 'red', flex: 1 }}
-                minimumZoomScale={0.15}
-                maximumZoomScale={5}
-                key={`customview${index}`}
-                enabled={false}
-            >
-                <Text>{index + 1}</Text>
-                <Image
-                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
-                />
-            </GHCV>
+            <>
+                <View style={{ flex: 1, maxHeight: this.state.a }} collapsable={false} />
+                <GHCV
+                    //pointerEvents="none"
+                    onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
+                    onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
+                    //enabled={false}
+                    style={{ backgroundColor: 'red', flex: 1, zIndex: 2 }}
+                    minimumZoomScale={0.15}
+                    maximumZoomScale={5}
+                    key={`customview${index}`}
+                >
+                    <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
+                    <Image
+                        source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
+                        style={{ flex: 1 }}
+                    />
+                </GHCV>
+            </>
         );
     }
 

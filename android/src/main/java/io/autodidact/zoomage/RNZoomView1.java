@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.VelocityTracker;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -18,6 +19,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.OverScroller;
 
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.views.view.ReactViewGroup;
 
 public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnScaleGestureListener {
     public static String TAG = RNZoomView1.class.getSimpleName();
@@ -26,13 +28,19 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
     private float minScale = 0.75f;
     private float maxScale = 3f;
     private PointF displacement = new PointF(0, 0);
+    private PointF lastDisplacement = new PointF();
     private int doubleTapAnimationDuration = 300;
     RectF layout = new RectF();
     RectF viewPort = new RectF();
+    RectF actualViewPort = new RectF();
     Matrix matrix = new Matrix();
     private PointF pointer = new PointF();
     private PointF prevPointer = new PointF();
     private int prevPointerId = -1;
+    VelocityTracker mVelocityTracker;
+
+    GestureDetector gestureDetector;
+    GestureListener gestureListener;
 
     public RNZoomView1(ThemedReactContext context){
         super(context);
@@ -47,23 +55,29 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
         };
 
         Rect mViewPort = new MeasureUtility(context).getUsableViewPort();
-        viewPort.set(0, 0, mViewPort.width(), mViewPort.height());
+        //viewPort.set(0, 0, mViewPort.width(), mViewPort.height());
+        viewPort.set(mViewPort);
+        matrix.preTranslate(mViewPort.left, mViewPort.top);
 
-        requestDisallowInterceptTouchEvent(true);
+        gestureListener = new GestureListener();
+        gestureDetector = new GestureDetector(context, gestureListener);
+
     }
 
 
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        //super.onLayout(changed, left, top, right, bottom);
         layout.set(left, top, right, bottom);
-        Log.d(TAG, "onLayout: " + top);
+        if(changed) matrix.preTranslate(-actualViewPort.left, -actualViewPort.top);
+        actualViewPort.set(targetViewPort());
+        matrix.preTranslate(actualViewPort.left, actualViewPort.top);
         /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             setClipBounds(new Rect(0, top, right, bottom));
         }
         */
-//super.onLayout(changed, left, top, right, bottom);
     }
 
     @Override
@@ -72,14 +86,25 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
         super.onDraw(canvas);
     }
 
-
-
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        requestDisallowInterceptTouchEvent(true);
+
         int action = ev.getActionMasked();
         int index = ev.getActionIndex();
         int pointerId = ev.getPointerId(index);
         if(prevPointerId == -1) prevPointerId = pointerId;
+
+        /*
+        if(action == MotionEvent.ACTION_DOWN) {
+            gestureListener.reset();
+        }
+        gestureDetector.onTouchEvent(ev);
+        if(gestureListener.isFling()){
+            return false;
+        }
+        */
+
         pointer.set(ev.getX(index), ev.getY(index));
 
         if(mScaleDetector.onTouchEvent(ev) || action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL || prevPointer == null || prevPointerId != pointerId) {
@@ -87,56 +112,55 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
             prevPointer.set(pointer);
         }
 
-        matrix.postTranslate(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
+        if(action == MotionEvent.ACTION_DOWN){ mVelocityTracker = VelocityTracker.obtain(); }
+        mVelocityTracker.addMovement(ev);
+        mVelocityTracker.computeCurrentVelocity(1);
+        if(action == MotionEvent.ACTION_UP) { mVelocityTracker.recycle(); }
+
+        lastDisplacement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
+        matrix.postTranslate(lastDisplacement.x, lastDisplacement.y);
 
         prevPointer.set(pointer);
-        if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) prevPointer = null;
-        postInvalidateOnAnimation();
-        //matrixGestureDetector.onTouchEvent(ev);
-        /*
-        //if(mScaleDetector.onTouchEvent(ev)) return true;
-        if (ev.getPointerCount() > 2) {
-            return false;
+        if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
+            prevPointer = null;
         }
 
-
-        rect.set(Math.min(ev.getX(0), ev.getX(ev.getPointerCount() - 1)), Math.min(ev.getY(0), ev.getY(ev.getPointerCount() - 1)), Math.max(ev.getX(0), ev.getX(ev.getPointerCount() - 1)), Math.max(ev.getY(0), ev.getY(ev.getPointerCount() - 1)));
-        if(rectPrev == null) rectPrev.set(rect.left, rect.top, rect.right, rect.bottom);
-        Log.d(TAG, "rect: " + rect + "  ccc " + rectPrev);
-        matrix.setRectToRect(rectPrev, rect, Matrix.ScaleToFit.CENTER);
-        rectPrev.set(rect.left, rect.top, rect.right, rect.bottom);
         postInvalidateOnAnimation();
 
-
-/*
-
-        */
-        //matrixGestureDetector.onTouchEvent(ev);
-        //mScaleDetector.onTouchEvent(ev);
-
-        Log.d(TAG, "rect: " + getActualLayout());
+        Log.d(TAG, "isInBounds: " + isInBounds(lastDisplacement.x, lastDisplacement.y) + "  " + lastDisplacement);
 
 
         return true;
-        /*
-        mGestureDetector.onTouchEvent(ev);
-        mScaleDetector.onTouchEvent(ev);
-        startAnimation(animationSet);
-        return true;
-        */
     }
 
-    public RectF getActualLayout(){
+    public RectF drawingRect(){
         RectF rect = new RectF();
         matrix.mapRect(rect, layout);
         return rect;
-        /*
-        RectF actualLayout = new RectF(0, 0, layout.width() * mScale, layout.height() * mScale);
-        actualLayout.offset((actualLayout.width() - layout.width()) * -0.5f, (actualLayout.height() - layout.height()) * -0.5f);
-        actualLayout.offset(layout.left, layout.top);
-        actualLayout.offset(displacement.x, displacement.y);
-        return actualLayout;
-        */
+    }
+
+    public RectF drawingViewPort(){
+        RectF rect = new RectF();
+        matrix.mapRect(rect, actualViewPort);
+        return rect;
+    }
+
+    public RectF targetViewPort(){
+        return new RectF(Math.max(viewPort.left, layout.left), Math.max(viewPort.top, layout.top), Math.min(viewPort.right, layout.right), Math.min(viewPort.bottom, layout.bottom));
+    }
+
+    public boolean isInBounds(float dx, float dy){
+        RectF actualLayout = drawingRect();
+        RectF targetViewPort = targetViewPort();
+
+        actualLayout.offset(dx, dy);
+
+        Log.d(TAG, "drawingViewPort: " + drawingViewPort());
+        Log.d(TAG, "isInBounds B: " + actualLayout);
+        boolean xInBounds = actualLayout.left <= targetViewPort.left && actualLayout.right >= targetViewPort.right;
+        boolean yInBounds = actualLayout.top <= targetViewPort.top && actualLayout.bottom >= targetViewPort.bottom;
+
+        return xInBounds && yInBounds;
     }
 
     public static float clamp(float min, float value, float max){
@@ -176,5 +200,31 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
 
+    }
+
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+        private boolean mDidFling = false;
+
+        public boolean isFling(){
+            return mDidFling;
+        }
+
+        public void reset(){
+            mDidFling = false;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float viewportPercetageToFling = 0.5f;
+            boolean flingX = Math.abs(e2.getX() - e1.getX()) > viewPort.width() * viewportPercetageToFling;
+            boolean flingY = Math.abs(e2.getY() - e1.getY()) > viewPort.height() * viewportPercetageToFling;
+            mDidFling = mDidFling || flingX || flingY;
+            return false;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
     }
 }
