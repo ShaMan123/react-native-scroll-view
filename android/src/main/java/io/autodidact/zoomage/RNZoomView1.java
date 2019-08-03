@@ -25,7 +25,7 @@ import android.widget.OverScroller;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.views.view.ReactViewGroup;
 
-public class RNZoomView1 extends FrameLayout implements ScaleGestureDetector.OnScaleGestureListener {
+public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnScaleGestureListener {
     public static String TAG = RNZoomView1.class.getSimpleName();
     private ScaleGestureDetector mScaleDetector;
     private float mScale = 1f;
@@ -34,7 +34,7 @@ public class RNZoomView1 extends FrameLayout implements ScaleGestureDetector.OnS
     private PointF displacement = new PointF(0, 0);
     private PointF lastDisplacement = new PointF();
     private int doubleTapAnimationDuration = 300;
-    private RectF layout = new RectF();
+    private RectF mLayoutRect = new RectF();
     private RectF viewPort = new RectF();
     Matrix matrix = new Matrix();
     private PointF pointer = new PointF();
@@ -79,11 +79,16 @@ public class RNZoomView1 extends FrameLayout implements ScaleGestureDetector.OnS
     }
 
     @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
-        canvas.translate(-viewPort.left, -viewPort.top);
+        canvas.setMatrix(matrix);
         Paint p = new Paint();
         p.setColor(Color.BLUE);
-        canvas.drawRect(layout, p);
+        canvas.drawRect(layoutRect(true), p);
         p.setColor(Color.YELLOW);
         canvas.drawRect(targetViewPort(true), p);
 
@@ -93,7 +98,7 @@ public class RNZoomView1 extends FrameLayout implements ScaleGestureDetector.OnS
         r.offset(360, 300);
         p.setColor(Color.BLACK);
         canvas.drawRect(r, p);
-        canvas.setMatrix(matrix);
+
         super.onDraw(canvas);
     }
 
@@ -145,35 +150,28 @@ public class RNZoomView1 extends FrameLayout implements ScaleGestureDetector.OnS
     }
 
     private void setLayoutRect(int left, int top, int right, int bottom){
-        layout.set(left, top, right, bottom);
-        layout.offset(viewPort.left, viewPort.top);
-        Log.d(TAG, "setLayoutRect: " + layout);
+        mLayoutRect.set(left, top, right, bottom);
+        mLayoutRect.offset(viewPort.left, viewPort.top);
     }
 
     private RectF layoutRect(boolean relative){
-        RectF out = layout;
+        RectF out = new RectF(mLayoutRect);
         if(relative) out.offsetTo(0, 0);
         return out;
     }
 
     public RectF drawingRect(boolean relative){
         RectF rect = new RectF();
-        RectF src = layout;
-        if(relative) src.offsetTo(0, 0);
+        RectF src = layoutRect(relative);
         matrix.mapRect(rect, src);
         return rect;
     }
-/*
-    public RectF drawingViewPort(boolean relative){
-        RectF rect = new RectF();
-        matrix.mapRect(rect, targetViewPort(relative));
-        return rect;
-    }
-*/
+
     public RectF targetViewPort(boolean relative){
-        RectF absolute = new RectF(Math.max(viewPort.left, layout.left), Math.max(viewPort.top, layout.top), Math.min(viewPort.right, layout.right), Math.min(viewPort.bottom, layout.bottom));
-        if(relative) absolute.offsetTo(0, 0);
-        return absolute;
+        RectF layoutRect = layoutRect(false);
+        RectF out = new RectF(Math.max(viewPort.left, layoutRect.left), Math.max(viewPort.top, layoutRect.top), Math.min(viewPort.right, layoutRect.right), Math.min(viewPort.bottom, layoutRect.bottom));
+        if(relative) out.offsetTo(0, 0);
+        return out;
     }
 
     public boolean isInBounds(float dx, float dy){
