@@ -62,7 +62,7 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
         Rect mViewPort = new MeasureUtility(context).getUsableViewPort();
         //viewPort.set(0, 0, mViewPort.width(), mViewPort.height());
         viewPort.set(mViewPort);
-        matrix.preTranslate(mViewPort.left, mViewPort.top);
+        //matrix.preTranslate(mViewPort.left, mViewPort.top);
 
         gestureListener = new GestureListener();
         gestureDetector = new GestureDetector(context, gestureListener);
@@ -85,12 +85,11 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.setMatrix(matrix);
         Paint p = new Paint();
         p.setColor(Color.BLUE);
-        canvas.drawRect(layoutRect(true), p);
+        canvas.drawRect(drawingRect(true), p);
         p.setColor(Color.YELLOW);
-        canvas.drawRect(targetViewPort(true), p);
+        //canvas.drawRect(targetViewPort(true), p);
 
         RectF r = new RectF(-5, -5, 5, 5);
         p.setColor(Color.BLACK);
@@ -98,7 +97,7 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
         r.offset(360, 300);
         p.setColor(Color.BLACK);
         canvas.drawRect(r, p);
-
+        canvas.setMatrix(matrix);
         super.onDraw(canvas);
     }
 
@@ -162,8 +161,12 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
 
     public RectF drawingRect(boolean relative){
         RectF rect = new RectF();
-        RectF src = layoutRect(relative);
-        matrix.mapRect(rect, src);
+        RectF src = layoutRect(false);
+        Matrix m = new Matrix();
+        if(relative) m.preTranslate(-src.left, -src.top);
+        m.postConcat(matrix);
+        m.mapRect(rect, layoutRect(relative));
+        Log.d(TAG, "drawingRect: " + rect + "   " + src );
         return rect;
     }
 
@@ -179,6 +182,7 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
         RectF targetViewPort = targetViewPort(true);
 
         actualLayout.offset(dx, dy);
+        Log.d(TAG, "isInBounds: " + actualLayout + "  " + targetViewPort);
         return actualLayout.contains(targetViewPort);
     }
 
@@ -194,6 +198,7 @@ public class RNZoomView1 extends ViewGroup implements ScaleGestureDetector.OnSca
         float scaleBy = clampScaleFactor(detector.getScaleFactor());
         mScale *= scaleBy;
         //RectF src = layoutRect(false);
+        //src.offset(-viewPort.left, -viewPort.top);
         //matrix.postScale(scaleBy, scaleBy, src.centerX(), src.centerY());
         matrix.postScale(scaleBy, scaleBy, detector.getFocusX(), detector.getFocusY());
     }
