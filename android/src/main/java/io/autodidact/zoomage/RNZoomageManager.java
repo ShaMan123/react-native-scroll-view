@@ -20,13 +20,6 @@ public class RNZoomageManager extends ViewGroupManager<RNZoomView1> {
     public RNZoomageManager(){
         super();
     }
-/*
-    @Nonnull
-    @Override
-    protected CustomScrollView createViewInstance(@Nonnull ThemedReactContext reactContext) {
-        return new CustomScrollView(reactContext);
-    }
-*/
 
     @Nonnull
     @Override
