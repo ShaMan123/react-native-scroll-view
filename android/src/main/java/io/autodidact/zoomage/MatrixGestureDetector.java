@@ -7,7 +7,7 @@ import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
 
-public class MatrixGestureDetector {
+public class MatrixGestureDetector implements IGestureDetector {
     private static final String TAG = "MatrixGestureDetector";
 
     private int ptpIdx = 0;
@@ -22,13 +22,13 @@ public class MatrixGestureDetector {
 
     private boolean mRotationEnabled;
 
-    interface OnMatrixChangeListener {
-        void onChange(Matrix matrix);
-    }
-
-    public MatrixGestureDetector(Matrix matrix, MatrixGestureDetector.OnMatrixChangeListener listener) {
+    public MatrixGestureDetector(Matrix matrix, OnMatrixChangeListener listener) {
         this.mMatrix = matrix;
         this.mListener = listener;
+    }
+
+    public MatrixGestureDetector(OnMatrixChangeListener listener) {
+        this(new Matrix(), listener);
     }
 
     public void onTouchEvent(MotionEvent event) {
@@ -84,5 +84,9 @@ public class MatrixGestureDetector {
     public MatrixGestureDetector setRotationEnabled(boolean enabled) {
         mRotationEnabled = enabled;
         return this;
+    }
+
+    public Matrix getMatrix(){
+        return mMatrix;
     }
 }

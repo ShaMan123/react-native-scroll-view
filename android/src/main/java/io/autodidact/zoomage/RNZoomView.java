@@ -1,68 +1,45 @@
 package io.autodidact.zoomage;
 
-import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 
-import androidx.annotation.RequiresApi;
-
-import com.autodidact.R;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.views.view.ReactViewGroup;
 
-public class RNZoomView extends ViewGroup {
+public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHelper {
     public static String TAG = RNZoomView.class.getSimpleName();
-    MatrixGestureDetector matrixGestureDetector;
-    Matrix matrix = new Matrix();
+    IGestureDetector combinedGestureDetector;
     RectF layout = new RectF();
     RectF dst = new RectF();
     Rect mViewPort;
 
-    RNZoomView(ThemedReactContext context){
+    RNZoomView(ThemedReactContext context, @IGestureDetector.GestureDetectors int detectorType){
         super(context);
-        matrixGestureDetector = new MatrixGestureDetector(matrix, new MatrixGestureDetector.OnMatrixChangeListener() {
-            @Override
-            public void onChange(Matrix matrix) {
-                matrix.mapRect(dst);
-                postInvalidateOnAnimation();
-            }
-        }).setRotationEnabled(false);
-
+        setGestureDetector(context, detectorType);
         mViewPort = new MeasureUtility(context).getUsableViewPort();
+    }
 
+    private void setGestureDetector(ThemedReactContext context, @IGestureDetector.GestureDetectors int detectorType){
+        if (detectorType == IGestureDetector.GestureDetectors.MATRIX_GESTURE_DETECTOR){
+            combinedGestureDetector = new MatrixGestureDetector(this).setRotationEnabled(false);
+        }
+        else{
+            combinedGestureDetector = new CombinedGestureDetector(context, this);
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //if(super.onTouchEvent(event)) return true;
         requestDisallowInterceptTouchEvent(true);
-        matrixGestureDetector.onTouchEvent(event);
-
+        combinedGestureDetector.onTouchEvent(event);
         Log.d(TAG, "onTouchEvent: " + contains());
         return true;
     }
@@ -75,7 +52,7 @@ public class RNZoomView extends ViewGroup {
         Matrix m = new Matrix();
         m.preTranslate(mViewPort.left, mViewPort.top);
         m.preTranslate(layout.left, layout.top);
-        m.postConcat(matrix);
+        m.postConcat(combinedGestureDetector.getMatrix());
         return m;
     }
 
@@ -115,5 +92,97 @@ public class RNZoomView extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         layout.set(l,t,r,b);
+    }
+
+
+    /*
+     * IGestureDetector.GestureHelper
+     *
+     */
+
+    private float minScale = 0.75f;
+    private float maxScale = 3f;
+
+    @Override
+    public void onChange(Matrix matrix) {
+        matrix.mapRect(dst);
+        postInvalidateOnAnimation();
+    }
+
+    @Override
+    public float getMinimumScale() {
+        return minScale;
+    }
+
+    public void setMinimumScale(float minimumScale) {
+        minScale = minimumScale;
+    }
+
+    @Override
+    public float getMaximumScale() {
+        return maxScale;
+    }
+
+    public void setMaximumScale(float maximumScale) {
+        maxScale = maximumScale;
+    }
+
+    public float clamp(float min, float value, float max){
+        return Math.max(min, Math.min(value, max));
+    }
+
+    @Override
+    public float clampScaleFactor(float scale) {
+        return clamp(getMinimumScale(), scale, getMaximumScale());
+    }
+
+    @Override
+    public float clampScaleFactor(float currentScale, float scaleBy) {
+        return clamp(getMinimumScale() / currentScale, scaleBy, getMaximumScale() / currentScale);
+    }
+
+    @Override
+    public RectF getClippingRect() {
+        return targetViewPort(false);
+    }
+
+    @Override
+    public RectF getTransformedRect() {
+        return out();
+    }
+
+    @Override
+    public PointF getTopLeftMaxDisplacement() {
+        RectF o = getTransformedRect();
+        RectF clippingRect = getClippingRect();
+        return new PointF(o.left - clippingRect.left, o.top - clippingRect.top);
+    }
+
+    @Override
+    public PointF getBottomRightMaxDisplacement() {
+        RectF o = getTransformedRect();
+        RectF clippingRect = getClippingRect();
+        return new PointF(o.right - clippingRect.right, o.bottom - clippingRect.bottom);
+    }
+
+    @Override
+    public PointF clampOffset(PointF offset) {
+        PointF topLeft = getTopLeftMaxDisplacement();
+        PointF bottomRight = getBottomRightMaxDisplacement();
+        return null;
+    }
+
+
+
+    public void clamp(PointF displacement){
+
+
+            /*
+            z.offset(displacement.x, displacement.y);
+            displacement.x = z.left  > viewPort.left && displacement.x < 0 ? o.left - viewPort.left : displacement.x;
+            displacement.x = z.right  < viewPort.right && displacement.x > 0 ? o.right - viewPort.right : displacement.x;
+            displacement.y = z.top  > viewPort.top && displacement.y < 0 ? o.top - viewPort.top : displacement.y;
+            displacement.y = z.bottom  < viewPort.bottom && displacement.y > 0 ? o.bottom - viewPort.bottom : displacement.y;
+            */
     }
 }
