@@ -20,6 +20,10 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     RectF dst = new RectF();
     Rect mViewPort;
 
+    RNZoomView(ThemedReactContext context){
+        this(context, IGestureDetector.GestureDetectors.COMBINED_GESTURE_DETECTOR);
+    }
+
     RNZoomView(ThemedReactContext context, @IGestureDetector.GestureDetectors int detectorType){
         super(context);
         setGestureDetector(context, detectorType);
