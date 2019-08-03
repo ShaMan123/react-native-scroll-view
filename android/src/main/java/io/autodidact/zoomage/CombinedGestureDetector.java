@@ -2,6 +2,8 @@ package io.autodidact.zoomage;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.RectF;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
@@ -11,6 +13,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGestureListener, IGestureDetector {
     public static String TAG = CombinedGestureDetector.class.getSimpleName();
     private ScaleGestureDetector mScaleDetector;
+    private GestureDetector mGestureDetector;
     private float mScale = 1f;
     private PointF displacement = new PointF(0, 0);
     private PointF lastDisplacement = new PointF();
@@ -28,6 +31,9 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
                 return event.getPointerCount() > 1 && super.onTouchEvent(event);
             }
         };
+        mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener());
+        mGestureDetector.setOnDoubleTapListener(doubleTapListener);
+
         gestureHelper = helper;
     }
 
@@ -43,7 +49,7 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
 
         pointer.set(ev.getX(index), ev.getY(index));
 
-        if(mScaleDetector.onTouchEvent(ev) || action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL || prevPointer == null || prevPointerId != pointerId) {
+        if(mGestureDetector.onTouchEvent(ev) || mScaleDetector.onTouchEvent(ev) || action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL || prevPointer == null || prevPointerId != pointerId) {
             if(prevPointer == null) prevPointer = new PointF();
             prevPointer.set(pointer);
         }
@@ -65,6 +71,8 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
             prevPointer = null;
         }
+
+
 /*
         if(action == MotionEvent.ACTION_UP){
             PointF a = gestureHelper.getTopLeftMaxDisplacement();
@@ -107,4 +115,22 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
     public void onScaleEnd(ScaleGestureDetector detector) {
 
     }
+
+    private GestureDetector.OnDoubleTapListener doubleTapListener = new GestureDetector.OnDoubleTapListener() {
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            gestureHelper.zoomTo(new RectF(0, 0, e.getX(), e.getY()));
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            return false;
+        }
+    };
 }

@@ -163,6 +163,15 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     }
 
     @Override
+    public void zoomTo(RectF dst) {
+        Matrix m = new Matrix();
+        m.setRectToRect(getTransformedRect(), dst, Matrix.ScaleToFit.FILL);
+        Log.d(TAG, "zoomTo: " + m);
+        getMatrix().postConcat(m);
+        onChange(getMatrix());
+    }
+
+    @Override
     public RectF getClippingRect() {
         return targetViewPort(false);
     }

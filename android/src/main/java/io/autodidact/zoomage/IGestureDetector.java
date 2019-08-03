@@ -25,6 +25,7 @@ public interface IGestureDetector {
         float getMaximumScale();
         float clampScaleFactor(float currentScale, float scaleBy);
         float clampScale(float scale);
+        void zoomTo(RectF dst);
 
         RectF getClippingRect();
         PointF getTopLeftMaxDisplacement();
