@@ -28,7 +28,7 @@ type Props = {};
 export default class App extends Component<Props> {
     state = { a: 150 }
     componentDidMount() {
-        setTimeout(() => this.setState({ a: 200 }), 5000);
+        //setTimeout(() => this.setState({ a: 200 }), 5000);
     }
     render() {
         return (
@@ -66,25 +66,34 @@ export default class App extends Component<Props> {
 
     renderPage(index) {
         return (
-            <>
-                <View style={{ flex: 1, maxHeight: this.state.a }} collapsable={false} />
-                <GHCV
-                    //pointerEvents="none"
-                    onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
-                    onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
-                    //enabled={false}
-                    style={{ backgroundColor: 'red', flex: 1, zIndex: 2 }}
-                    minimumZoomScale={0.15}
-                    maximumZoomScale={5}
-                    key={`customview${index}`}
-                >
-                    <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
-                    <Image
-                        source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg' }}
-                        style={{ flex: 1 }}
-                    />
-                </GHCV>
-            </>
+            <GHCV
+                //pointerEvents="none"
+                onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
+                onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
+                //enabled={false}
+                style={{ backgroundColor: 'red', flexWrap: 'wrap', flexDirection: 'row', top: this.state.a }}
+                minimumZoomScale={0.15}
+                maximumZoomScale={5}
+                key={`customview${index}`}
+            >
+                <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+                <Image
+                    style={{ width: 300, height: 300 }}
+                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                />
+            </GHCV>
         );
     }
 
