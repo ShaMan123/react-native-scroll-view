@@ -68,7 +68,7 @@ public class RNZoomView extends ViewGroup {
     }
 
     public boolean contains(){
-        return out().contains(absLayout());
+        return out(true).contains(targetViewPort(false));
     }
 
     public Matrix absMatrix(){
@@ -85,9 +85,16 @@ public class RNZoomView extends ViewGroup {
         return out;
     }
 
-    public RectF out(){
+    public RectF targetViewPort(boolean relative){
+        RectF layoutRect = absLayout();
+        RectF out = new RectF(Math.max(mViewPort.left, layoutRect.left), Math.max(mViewPort.top, layoutRect.top), Math.min(mViewPort.right, layoutRect.right), Math.min(mViewPort.bottom, layoutRect.bottom));
+        if(relative) out.offsetTo(0, 0);
+        return out;
+    }
+
+    public RectF out(boolean relative){
         RectF src = new RectF(absLayout());
-        src.offsetTo(0, 0);
+        if(relative) src.offsetTo(0, 0);
         absMatrix().mapRect(dst, src);
         return dst;
     }
@@ -95,7 +102,7 @@ public class RNZoomView extends ViewGroup {
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.setMatrix(new Matrix());
-        RectF dst1 = out();
+        RectF dst1 = out(true);
         Paint p = new Paint();
         p.setColor(Color.BLUE);
         canvas.drawRect(dst1, p);
@@ -108,6 +115,5 @@ public class RNZoomView extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         layout.set(l,t,r,b);
-        Log.d(TAG, "onLayout: " + layout);
     }
 }
