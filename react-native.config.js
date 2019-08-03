@@ -3,6 +3,8 @@
 //const path = require('path');
 //const root = __dirname;
 
+const path = require('path');
+
 module.exports = {
     dependency: {
         platforms: {
@@ -13,4 +15,9 @@ module.exports = {
             ios: {}
         },
     },
+    dependencies: {
+        zoomable: {
+            root: path.resolve(__dirname, 'Zoomable')
+        }
+    }
 };

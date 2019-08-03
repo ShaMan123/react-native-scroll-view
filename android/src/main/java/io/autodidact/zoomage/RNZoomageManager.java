@@ -10,11 +10,11 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RNZoomageManager extends ViewGroupManager<RNZoomView> {
+public class RNZoomageManager extends ViewGroupManager<RNZoomView1> {
     @Nonnull
     @Override
     public String getName() {
-        return "RNZoomageManager";
+        return this.getClass().getSimpleName();
     }
 
     public RNZoomageManager(){
@@ -30,8 +30,8 @@ public class RNZoomageManager extends ViewGroupManager<RNZoomView> {
 
     @Nonnull
     @Override
-    protected RNZoomView createViewInstance(@Nonnull ThemedReactContext reactContext) {
-        return new RNZoomView(reactContext);
+    protected RNZoomView1 createViewInstance(@Nonnull ThemedReactContext reactContext) {
+        return new RNZoomView1(reactContext);
     }
 /*
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)

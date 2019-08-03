@@ -18,10 +18,10 @@ public class MeasureUtility {
         mContext = context;
     }
 
-    public Point getUsableViewPort(){
+    public Rect getUsableViewPort(){
         Point viewPort = getViewPort();
-        viewPort.offset(0, -getStatusBarHeight());
-        return viewPort;
+        //viewPort.offset(0, -getStatusBarHeight());
+        return new Rect(0, getStatusBarHeight(), viewPort.x, viewPort.y);
     }
 
 

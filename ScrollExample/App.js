@@ -8,6 +8,9 @@
 
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView } from 'react-native';
+import ViewPager from '@react-native-community/viewpager';
+import { createNativeWrapper } from 'react-native-gesture-handler';
+import * as _ from 'lodash';
 //import { State, PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 
 const instructions = Platform.select({
@@ -18,19 +21,20 @@ const instructions = Platform.select({
 });
 
 import CustomView from 'react-native-scroll-view';
-
-const GHCV = View;//createNativeWrapper(CustomView, {shouldActivateOnStart: true, enabled: false});
+const GHCV = createNativeWrapper(CustomView, { shouldActivateOnStart: true, disallowInterruption: true });
+const GHViewPager = createNativeWrapper(ViewPager, { shouldActivateOnStart: true, disallowInterruption: true });
 
 type Props = {};
 export default class App extends Component<Props> {
     render() {
         return (
+            <View style={{ flex: 1 }}>
             <CustomView
                 //pointerEvents="none"
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red' }}
+                //style={{ backgroundColor: 'blue' }}
                 // minimumZoomScale={0.15}
                 maximumZoomScale={5}
                 //dispatchScrollEvents={false}
@@ -51,13 +55,14 @@ export default class App extends Component<Props> {
                     style={{ width: 300, height: 300 }}
                     source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
                     />
-            </CustomView>
+                </CustomView>
+                </View>
         );
     }
 
-    render1() {
+    renderPage(index) {
         return (
-            <CustomView
+            <GHCV
                 //pointerEvents="none"
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
@@ -65,12 +70,25 @@ export default class App extends Component<Props> {
                 style={{ backgroundColor: 'red', flex: 1 }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={5}
-
+                key={`customview${index}`}
+                enabled={false}
             >
+                <Text>{index + 1}</Text>
                 <Image
                     source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
                 />
-            </CustomView>
+            </GHCV>
+        );
+    }
+
+    render() {
+        return (
+            <GHViewPager
+                style={{flex:1}}
+            >
+                <View>{this.renderPage(0)}</View>
+                <View>{this.renderPage(1)}</View>
+            </GHViewPager>
         );
     }
 

@@ -13,6 +13,9 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import javax.annotation.Nullable;
 
 import static io.autodidact.zoomage.Zoomage.TAG;
@@ -26,6 +29,7 @@ public class Event extends com.facebook.react.uimanager.events.Event {
         //public WritableMap extractEventData(ScaleGestureDetector.OnScaleGestureListener scaleGestureListener);
     }
 
+    @Retention(RetentionPolicy.SOURCE)
     @StringDef({EventNames.ON_SCALE, EventNames.ON_SCALE_BEGIN, EventNames.ON_SCALE_END, EventNames.ON_SCROLL})
     public static @interface EventNames {
         String ON_SCALE_BEGIN = "onScrollBegin";

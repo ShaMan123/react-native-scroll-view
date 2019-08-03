@@ -4,6 +4,8 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -59,8 +61,7 @@ public class RNZoomView extends ReactViewGroup {
             }
         };
 
-        Point mViewPort = new MeasureUtility(context).getUsableViewPort();
-        viewPort.set(0, 0, mViewPort.x, mViewPort.y);
+        viewPort.set(new MeasureUtility(context).getUsableViewPort());
 
         Log.d(TAG, "viewPort: " + viewPort.toString());
 
@@ -91,8 +92,9 @@ public class RNZoomView extends ReactViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        layout.set(left, top, right, bottom);
         super.onLayout(changed, left, top, right, bottom);
+        layout.set(left, top, right, bottom);
+
     }
 
     @Override
@@ -103,11 +105,34 @@ public class RNZoomView extends ReactViewGroup {
         return true;
     }
 
-    public RectF getActualLayout(){
-        RectF actualLayout = new RectF(layout.left, layout.top, layout.width() * mScale, layout.height() * mScale);
-        actualLayout.offset((actualLayout.width() - layout.width()) * -0.5f, (actualLayout.height() - layout.height()) * -0.5f);
+    public RectF actualLayout(){
+        RectF actualLayout = new RectF(0, 0, layout.width() * mScale, layout.height() * mScale);
+        actualLayout.offsetTo(layout.left, layout.top);
+        //actualLayout.offset((actualLayout.width() - layout.width()) * -0.5f, (actualLayout.height() - layout.height()) * -0.5f);
         actualLayout.offset(-displacement.x, -displacement.y);
         return actualLayout;
+    }
+
+    public RectF targetViewPort(){
+        return new RectF(Math.max(viewPort.left, layout.left), Math.max(viewPort.top, layout.top), Math.min(viewPort.right, layout.right), Math.min(viewPort.bottom, layout.bottom));
+    }
+
+    public boolean isInBounds(){
+        return isInBounds(0, 0);
+    }
+
+    public boolean isInBounds(float dx, float dy){
+        RectF actualLayout = actualLayout();
+        RectF targetViewPort = targetViewPort();
+
+        actualLayout.offset(dx, dy);
+
+        Log.d(TAG, "isInBounds: " + targetViewPort);
+        Log.d(TAG, "isInBounds B: " + actualLayout);
+        boolean xInBounds = actualLayout.left <= targetViewPort.left && actualLayout.right >= targetViewPort.right;
+        boolean yInBounds = actualLayout.top <= targetViewPort.top && actualLayout.bottom >= targetViewPort.bottom;
+
+        return xInBounds && yInBounds;
     }
 
     public static float clamp(float min, float value, float max){
@@ -143,7 +168,7 @@ public class RNZoomView extends ReactViewGroup {
             float prevScale = mScale;
             float clampedScaleFactor = clampScaleFactor(detector.getScaleFactor());
             mScale *= clampedScaleFactor;
-            RectF actualLayout = getActualLayout();
+            RectF actualLayout = actualLayout();
             ScaleAnimation scaleAnimation = new ScaleAnimation(previousScaleFactor, clampedScaleFactor, previousScaleFactor, clampedScaleFactor, actualLayout.centerX(), actualLayout.centerY());
             animationSet.addAnimation(scaleAnimation);
             previousScaleFactor = clampedScaleFactor;
@@ -164,6 +189,18 @@ public class RNZoomView extends ReactViewGroup {
         public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
             return;
         }
+    }
+
+    Paint paint = new Paint();
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        paint.setARGB(100, 200, 0, 233);
+        canvas.drawRect(targetViewPort(), paint);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            canvas.clipOutRect(targetViewPort());
+        }
+        Log.d(TAG, "onDraw: ");
     }
 
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -203,7 +240,7 @@ public class RNZoomView extends ReactViewGroup {
         public PointF clampedDistance(float distanceX, float distanceY){
 
             PointF d = new PointF(clampRawDistance(distanceX), clampRawDistance(distanceY));
-            RectF actualLayout = getActualLayout();
+            RectF actualLayout = actualLayout();
             RectF displacementBounds = new RectF(actualLayout.left - layout.left, actualLayout.top - layout.top, actualLayout.right - layout.right,actualLayout.bottom - layout.bottom);
             Log.d(TAG, "    layout:  "+ layout.toString() + "    actual:  " + actualLayout.toString());
 
@@ -274,13 +311,16 @@ public class RNZoomView extends ReactViewGroup {
 
 
 
-            PointF d = clampedDistance(distanceX, distanceY);
+            PointF d = new PointF(distanceX, distanceY);
+            Log.d(TAG, "onScroll: isInBounds " + isInBounds(distanceX, distanceY));
 
             TranslateAnimation translateAnimation = new TranslateAnimation(-previousDistance.x, -d.x, -previousDistance.y, -d.y);
             animationSet.addAnimation(translateAnimation);
 
             previousDistance.set(d);
             displacement.offset(d.x, d.y);
+            
+            invalidate();
             
             return translateAnimation.willChangeTransformationMatrix();
         }
