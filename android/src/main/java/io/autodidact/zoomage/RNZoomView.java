@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.views.view.ReactViewGroup;
 
 public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHelper {
     public static String TAG = RNZoomView.class.getSimpleName();
@@ -36,14 +37,6 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
         else{
             combinedGestureDetector = new CombinedGestureDetector(context, this);
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        //if(super.onTouchEvent(event)) return true;
-        requestDisallowInterceptTouchEvent(true);
-        combinedGestureDetector.onTouchEvent(event);
-        return true;
     }
 
     public boolean contains(){
@@ -89,12 +82,25 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
 
         canvas.setMatrix(absMatrix());
         super.onDraw(canvas);
-
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        layout.set(l,t,r,b);
+        //super.onLayout(changed, l, t, r, b);
+        Rect out = new Rect();
+        for (int i = 0; i < getChildCount() - 1; i++) {
+            getChildAt(i).getHitRect(out);
+            Log.d(TAG, "onChildLayout: " + i + "  " + out.toString());
+        }
+        layout.set(l, t, r, b);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        //if(super.onTouchEvent(event)) return true;
+        requestDisallowInterceptTouchEvent(true);
+        combinedGestureDetector.onTouchEvent(event);
+        return true;
     }
 
 
@@ -105,9 +111,22 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
 
     private float minScale = 0.75f;
     private float maxScale = 3f;
+    private float[] values = new float[9];
 
     @Override
     public void onChange(Matrix matrix) {
+        /*
+        matrix.getValues(values);
+        setScaleX(1);
+        setScaleY(1);
+        setScrollX(((int) -values[Matrix.MTRANS_X]));
+        setScrollY(((int) -values[Matrix.MTRANS_Y]));
+        RectF o = getClippingRect();
+        setPivotX(o.centerX());
+        setPivotY(o.centerY());
+        setScaleX(((int) values[Matrix.MSCALE_X]));
+        setScaleY(((int) values[Matrix.MSCALE_Y]));
+        */
         postInvalidateOnAnimation();
     }
 
@@ -199,10 +218,13 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
         RectF transformed = getTransformedRect();
         transformed.offset(offset.x, offset.y);
 
-        if(transformed.left > clippingRect.left) out.offset(clippingRect.left - transformed.left, 0);
-        if(transformed.top > clippingRect.top) out.offset(0, clippingRect.top - transformed.top);
-        if(transformed.right < clippingRect.right) out.offset(clippingRect.right - transformed.right, 0);
-        if(transformed.bottom < clippingRect.bottom) out.offset(0, clippingRect.bottom - transformed.bottom);
+        if(transformed.width() <= clippingRect.width()) out.x = 0;
+        else if(transformed.left > clippingRect.left ) out.offset(clippingRect.left - transformed.left, 0);
+        else if(transformed.right < clippingRect.right) out.offset(clippingRect.right - transformed.right, 0);
+
+        if(transformed.height() <= clippingRect.height()) out.y = 0;
+        else if(transformed.top > clippingRect.top) out.offset(0, clippingRect.top - transformed.top);
+        else if(transformed.bottom < clippingRect.bottom) out.offset(0, clippingRect.bottom - transformed.bottom);
         return out;
     }
 }
