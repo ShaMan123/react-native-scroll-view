@@ -18,6 +18,10 @@ public class MatrixGestureDetector {
     private float[] mDst = new float[4];
     private int mCount;
 
+    private float[] values = new float[9];
+
+    private boolean mRotationEnabled;
+
     interface OnMatrixChangeListener {
         void onChange(Matrix matrix);
     }
@@ -53,6 +57,14 @@ public class MatrixGestureDetector {
                 }
 
                 mTempMatrix.setPolyToPoly(mSrc, ptpIdx, mDst, ptpIdx, mCount);
+
+                if(!mRotationEnabled){
+                    mTempMatrix.getValues(values);
+                    values[Matrix.MSKEW_X] = 0;
+                    values[Matrix.MSKEW_Y] = 0;
+                    mTempMatrix.setValues(values);
+                }
+
                 mMatrix.postConcat(mTempMatrix);
 
                 if(mListener != null) {
@@ -69,34 +81,8 @@ public class MatrixGestureDetector {
         }
     }
 
-    public RectF rect(){
-        RectF rect = new RectF();
-        mMatrix.mapRect(rect);
-        return rect;
-    }
-
-    public void draw(Canvas canvas){
-        float[] values = new float[9];
-        mMatrix.getValues(values);
-        float scale = values[Matrix.MSCALE_X];
-        float translateX  = values[Matrix.MTRANS_X];
-        float translateY  = values[Matrix.MTRANS_Y];
-        canvas.translate(translateX, translateY);
-        canvas.getClipBounds();
-        canvas.scale(scale, scale);
-    }
-
-    public Matrix getMatrix(float focalX, float focalY){
-        float[] values = new float[9];
-        mMatrix.getValues(values);
-        float scale = values[Matrix.MSCALE_X];
-        float translateX  = values[Matrix.MTRANS_X];
-        float translateY  = values[Matrix.MTRANS_Y];
-        Matrix matrix = new Matrix();
-
-
-        matrix.postScale(scale, scale, focalX, focalY);
-        matrix.postTranslate(translateX, translateY);
-        return matrix;
+    public MatrixGestureDetector setRotationEnabled(boolean enabled) {
+        mRotationEnabled = enabled;
+        return this;
     }
 }
