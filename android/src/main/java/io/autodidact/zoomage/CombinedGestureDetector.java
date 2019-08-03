@@ -56,6 +56,8 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
         lastDisplacement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
         lastDisplacement.set(gestureHelper.clampOffset(displacement, lastDisplacement));
         matrix.postTranslate(lastDisplacement.x, lastDisplacement.y);
+        displacement.offset(lastDisplacement.x, lastDisplacement.y);
+
 
         gestureHelper.onChange(matrix);
 
@@ -63,6 +65,13 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
             prevPointer = null;
         }
+/*
+        if(action == MotionEvent.ACTION_UP){
+            PointF a = gestureHelper.getTopLeftMaxDisplacement();
+            matrix.postTranslate(-a.x, -a.y);
+
+        }
+        */
     }
 
     public void postScale() {

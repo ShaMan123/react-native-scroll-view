@@ -24,12 +24,15 @@ public interface IGestureDetector {
         float getMinimumScale();
         float getMaximumScale();
         float clampScaleFactor(float currentScale, float scaleBy);
-        float clampScaleFactor(float scale);
+        float clampScale(float scale);
 
         RectF getClippingRect();
         PointF getTopLeftMaxDisplacement();
+        PointF getTopLeftMaxDisplacement(PointF distance);
         PointF getBottomRightMaxDisplacement();
+        PointF getBottomRightMaxDisplacement(PointF distance);
         PointF clampOffset(PointF distance, PointF offset);
+        PointF clampOffset(PointF distance);
 
         RectF getTransformedRect();
     }

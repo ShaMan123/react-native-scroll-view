@@ -43,7 +43,6 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
         //if(super.onTouchEvent(event)) return true;
         requestDisallowInterceptTouchEvent(true);
         combinedGestureDetector.onTouchEvent(event);
-        Log.d(TAG, "onTouchEvent: " + contains());
         return true;
     }
 
@@ -109,7 +108,6 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
 
     @Override
     public void onChange(Matrix matrix) {
-        //matrix.mapRect(dst);
         postInvalidateOnAnimation();
     }
 
@@ -136,7 +134,7 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     }
 
     @Override
-    public float clampScaleFactor(float scale) {
+    public float clampScale(float scale) {
         return clamp(getMinimumScale(), scale, getMaximumScale());
     }
 
@@ -160,41 +158,51 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
         RectF o = getTransformedRect();
         RectF clippingRect = getClippingRect();
         Log.d(TAG, "getTopLeftMaxDisplacement: " + o + "  " + clippingRect);
-        return new PointF(Math.min(o.left - clippingRect.left, 0), Math.min(o.top - clippingRect.top, 0));
+        //return new PointF(Math.min(o.left - clippingRect.left, 0), Math.min(o.top - clippingRect.top, 0));
+        return new PointF(o.left - clippingRect.left, o.top - clippingRect.top);
+    }
+
+    @Override
+    public PointF getTopLeftMaxDisplacement(PointF distance) {
+        PointF p = getTopLeftMaxDisplacement();
+        p.offset(-distance.x, -distance.y);
+        return p;
     }
 
     @Override
     public PointF getBottomRightMaxDisplacement() {
         RectF o = getTransformedRect();
         RectF clippingRect = getClippingRect();
-        return new PointF(Math.max(o.right - clippingRect.right, 0), Math.max(o.bottom - clippingRect.bottom, 0));
+        //return new PointF(Math.max(o.right - clippingRect.right, 0), Math.max(o.bottom - clippingRect.bottom, 0));
+        return new PointF(o.right - clippingRect.right, o.bottom - clippingRect.bottom);
+    }
+
+    @Override
+    public PointF getBottomRightMaxDisplacement(PointF distance) {
+        PointF p = getBottomRightMaxDisplacement();
+        p.offset(-distance.x, -distance.y);
+        return p;
+    }
+
+    @Override
+    public PointF clampOffset(PointF distance) {
+        PointF topLeft = getTopLeftMaxDisplacement();
+        PointF bottomRight = getBottomRightMaxDisplacement();
+
+        return new PointF();
     }
 
     @Override
     public PointF clampOffset(PointF distance, PointF offset) {
-        PointF topLeft = getTopLeftMaxDisplacement();
-        PointF bottomRight = getBottomRightMaxDisplacement();
-        topLeft.offset(-distance.x, -distance.y);
-        bottomRight.offset(-distance.x, -distance.y);
+        PointF out = new PointF(offset.x, offset.y);
+        RectF clippingRect = getClippingRect();
+        RectF transformed = getTransformedRect();
+        transformed.offset(offset.x, offset.y);
 
-        Log.d(TAG, "clampOffset: " + topLeft + "  " + offset + "  " + bottomRight);
-        float offsetX = offset.x < 0 ? Math.min(topLeft.x, offset.x) : Math.max(bottomRight.x, offset.x);
-        float offsetY = offset.y < 0 ? Math.min(topLeft.y, offset.y) : Math.max(bottomRight.y, offset.y);
-
-        return offset;
-        //return new PointF(offsetX, offsetY);
-    }
-
-
-    public void clamp(PointF displacement){
-
-
-            /*
-            z.offset(displacement.x, displacement.y);
-            displacement.x = z.left  > viewPort.left && displacement.x < 0 ? o.left - viewPort.left : displacement.x;
-            displacement.x = z.right  < viewPort.right && displacement.x > 0 ? o.right - viewPort.right : displacement.x;
-            displacement.y = z.top  > viewPort.top && displacement.y < 0 ? o.top - viewPort.top : displacement.y;
-            displacement.y = z.bottom  < viewPort.bottom && displacement.y > 0 ? o.bottom - viewPort.bottom : displacement.y;
-            */
+        if(transformed.left > clippingRect.left) out.offset(clippingRect.left - transformed.left, 0);
+        if(transformed.top > clippingRect.top) out.offset(0, clippingRect.top - transformed.top);
+        if(transformed.right < clippingRect.right) out.offset(clippingRect.right - transformed.right, 0);
+        if(transformed.bottom < clippingRect.bottom) out.offset(0, clippingRect.bottom - transformed.bottom);
+        return out;
     }
 }
