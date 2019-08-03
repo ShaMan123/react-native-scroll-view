@@ -17,22 +17,12 @@ import com.facebook.react.uimanager.PixelUtil;
 
 import javax.annotation.Nullable;
 
-import static io.autodidact.zoomage.ZoomageViewGroup.TAG;
-
 public class DataExtractor {
+    /*
     private ScaleDataExtractor lastScaleDataExtractor;
     private TranslateDataExtractor lastTranslateDataExtractor;
-    private @Nullable Zoomage handler;
     private long lastTranslateEventTime = -1;
     private long lastTranslateDownTime = -1;
-
-    DataExtractor(Zoomage handler){
-        this.handler = handler;
-    }
-
-    DataExtractor(){
-        this.handler = null;
-    }
 
     public WritableMap extractEventData(ScaleGestureDetector detector){
         ScaleDataExtractor dataExtractor = new ScaleDataExtractor(handler, detector);
@@ -65,7 +55,7 @@ public class DataExtractor {
     }
 
     public WritableMap extractEventData(){
-        JSScrollEventDataExtractor dataExtractor = new JSScrollEventDataExtractor(handler, lastScaleDataExtractor, lastTranslateDataExtractor);
+        JSScrollEventDataExtractor dataExtractor = new JSScrollEventDataExtractor(lastScaleDataExtractor, lastTranslateDataExtractor);
         return dataExtractor.extractEventData();
     }
 
@@ -83,23 +73,20 @@ public class DataExtractor {
     }
 
     public static class ScaleDataExtractor extends DataExtractorBase {
-        private Zoomage handler;
         private ScaleGestureDetector scaleDetector;
         private @Nullable ValueAnimator animation;
-        public ScaleDataExtractor(Zoomage handler, ScaleGestureDetector scaleGestureDetector){
-            this.handler = handler;
+        public ScaleDataExtractor(ScaleGestureDetector scaleGestureDetector){
             scaleDetector = scaleGestureDetector;
             animation = null;
         }
 
-        public ScaleDataExtractor(Zoomage handler, ScaleGestureDetector scaleGestureDetector, ValueAnimator animation){
-            this.handler = handler;
+        public ScaleDataExtractor(ScaleGestureDetector scaleGestureDetector, ValueAnimator animation){
             scaleDetector = scaleGestureDetector;
             this.animation = animation;
         }
 
         public float getScale(){
-            return handler.getCurrentScale();
+            return null;
         }
 
         public float getFocalX(){
@@ -129,7 +116,6 @@ public class DataExtractor {
     }
 
     public static class TranslateDataExtractor extends DataExtractorBase {
-        private Zoomage handler;
         float translationX = 0;
         float translationY = 0;
         float x = 0;
@@ -138,18 +124,6 @@ public class DataExtractor {
         float absoluteY = 0;
         float velocityX = 0;
         float velocityY = 0;
-
-        public TranslateDataExtractor(Zoomage handler, MotionEvent e1, MotionEvent e2, float distanceX, float distanceY, long dt){
-            this.handler = handler;
-            extractScrollEventData(e1, e2, distanceX, distanceY, dt);
-        }
-
-        public PointF getTranslate(){
-            if(handler == null) throw new NullPointerException("handler was not provided to TranslateDataExtractor");
-            float[] values = new float[9];
-            handler.getMatrix().getValues(values);
-            return new PointF(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
-        }
 
         private void extractScrollEventData(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY, long dt) {
             PointF translation = handler.getCurrentTranslate();
@@ -185,7 +159,6 @@ public class DataExtractor {
     }
 
     public static class JSScrollEventDataExtractor extends DataExtractorBase {
-        private Zoomage handler;
         private int target;
         LayoutRect layoutMeasurement;
         LayoutRect contentSize;
@@ -194,7 +167,7 @@ public class DataExtractor {
         LayoutPoint velocity;
         float scale;
 
-        JSScrollEventDataExtractor(Zoomage handler, @Nullable ScaleDataExtractor scaleDataExtractor, @Nullable TranslateDataExtractor translateDataExtractor){
+        JSScrollEventDataExtractor(View view, @Nullable ScaleDataExtractor scaleDataExtractor, @Nullable TranslateDataExtractor translateDataExtractor){
             float scale = scaleDataExtractor != null ? scaleDataExtractor.getScale() : 1;
             PointF velocity = new PointF();
             PointF contentOffset = new PointF();
@@ -212,16 +185,14 @@ public class DataExtractor {
                 contentOffset.set(0, 0);
             }
 
-            init(handler, scale, contentOffset, velocity);
+            init(view, scale, contentOffset, velocity);
         }
 
-        JSScrollEventDataExtractor(Zoomage handler, float scale, PointF contentOffset, PointF velocity){
-            init(handler, scale, contentOffset, velocity);
+        JSScrollEventDataExtractor(View view, float scale, PointF contentOffset, PointF velocity){
+            init(view, scale, contentOffset, velocity);
         }
 
-        private void init(Zoomage handler, float scale, PointF contentOffset, PointF velocity){
-            this.handler = handler;
-            ZoomageViewGroup view = handler.getView();
+        private void init(View view, float scale, PointF contentOffset, PointF velocity){
             target = view.getId();
             layoutMeasurement = LayoutRect.toDIPFromPixel(view.getWidth(), view.getHeight());
             contentSize = LayoutRect.toDIPFromPixel(view.getWidth() * scale, view.getHeight() * scale);
@@ -322,4 +293,5 @@ public class DataExtractor {
             }
         }
     }
+    */
 }
