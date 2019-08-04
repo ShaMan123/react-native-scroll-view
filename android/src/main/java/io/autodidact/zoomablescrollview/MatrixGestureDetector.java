@@ -1,10 +1,6 @@
-package io.autodidact.zoomage;
+package io.autodidact.zoomablescrollview;
 
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.PointF;
-import android.graphics.RectF;
-import android.util.Log;
 import android.view.MotionEvent;
 
 public class MatrixGestureDetector implements IGestureDetector {

@@ -1,30 +1,29 @@
-package io.autodidact.zoomage;
+package io.autodidact.zoomablescrollview;
 
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
-import com.facebook.react.uimanager.annotations.ReactProp;
 
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RNZoomageManager extends ViewGroupManager<RNZoomView> {
+public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScrollView> {
     @Nonnull
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
     }
 
-    public RNZoomageManager(){
+    public RNZoomableScrollViewManager(){
         super();
     }
 
     @Nonnull
     @Override
-    protected RNZoomView createViewInstance(@Nonnull ThemedReactContext reactContext) {
-        return new RNZoomView(reactContext);
+    protected RNZoomableScrollView createViewInstance(@Nonnull ThemedReactContext reactContext) {
+        return new RNZoomableScrollView(reactContext);
     }
 /*
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)

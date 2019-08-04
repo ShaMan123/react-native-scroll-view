@@ -1,8 +1,5 @@
-package io.autodidact.zoomage;
+package io.autodidact.zoomablescrollview;
 
-import android.graphics.Matrix;
-import android.util.Log;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import androidx.annotation.StringDef;
@@ -11,13 +8,10 @@ import androidx.core.util.Pools;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import javax.annotation.Nullable;
 
 public class Event extends com.facebook.react.uimanager.events.Event {
     public static interface OnScaleEvent {

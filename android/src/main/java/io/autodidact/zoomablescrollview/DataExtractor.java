@@ -1,21 +1,4 @@
-package io.autodidact.zoomage;
-
-import android.animation.ValueAnimator;
-import android.graphics.Matrix;
-import android.graphics.PointF;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.View;
-
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.PixelUtil;
-
-import javax.annotation.Nullable;
+package io.autodidact.zoomablescrollview;
 
 public class DataExtractor {
     /*

@@ -1,16 +1,12 @@
-package io.autodidact.zoomage;
+package io.autodidact.zoomablescrollview;
 
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
 import android.view.WindowManager;
 
 import com.facebook.react.uimanager.ThemedReactContext;
-
-import static io.autodidact.zoomage.RNZoomView.TAG;
 
 public class MeasureUtility {
     private ThemedReactContext mContext;

@@ -1,4 +1,4 @@
-package io.autodidact.zoomage;
+package io.autodidact.zoomablescrollview;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
@@ -10,20 +10,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class RNZoomagePackage implements ReactPackage {
-    public RNZoomagePackage() {
+public class RNZoomableScrollViewPackage implements ReactPackage {
+    public RNZoomableScrollViewPackage() {
     }
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(
-                new RNZoomageModule(reactContext)
+                new RNZoomableScrollViewModule(reactContext)
         );
     }
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-                new RNZoomageManager()
+                new RNZoomableScrollViewManager()
         );
     }
 

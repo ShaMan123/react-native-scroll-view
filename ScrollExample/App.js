@@ -71,14 +71,14 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flexWrap: 'wrap', flexDirection: 'row', top: this.state.a }}
+                style={{ backgroundColor: 'red', flexWrap:'wrap',  flexDirection: 'row', top: this.state.a, alignItems: 'center', justifyContent:'center' }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={5}
                 key={`customview${index}`}
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
                 <Image
-                    style={{ width: 300, height: 300 }}
+                    style={{ width: 300, height: 300, opacity: 0.2 }}
                     source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
                 />
                 <Image

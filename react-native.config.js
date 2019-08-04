@@ -9,15 +9,10 @@ module.exports = {
     dependency: {
         platforms: {
             android: {
-                packageImportPath: "import io.autodidact.zoomage.RNZoomagePackage;",
-                packageInstance: "new RNZoomagePackage()"
+                packageImportPath: "import io.autodidact.zoomablescrollview.RNZoomableScrollViewPackage;",
+                packageInstance: "new RNZoomableScrollViewPackage()"
             },
             ios: {}
         },
-    },
-    dependencies: {
-        zoomable: {
-            root: path.resolve(__dirname, 'Zoomable')
-        }
     }
 };

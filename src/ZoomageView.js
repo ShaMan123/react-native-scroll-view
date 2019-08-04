@@ -19,7 +19,7 @@ import {
 
 import './Events';
 
-const nativeViewName = 'RNZoomageManager';
+const nativeViewName = 'RNZoomableScrollViewManager';
 const RNZoomageView = requireNativeComponent(nativeViewName, ScrollView, {
     nativeOnly: {
         nativeID: true
