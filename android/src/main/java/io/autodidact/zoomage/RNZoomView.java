@@ -99,6 +99,8 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
 
     @Override
     public void requestDisallowInterceptTouchEvent() {
+        // TODO: 04/08/2019  
+        // add movement tracker for smooth transition
         super.requestDisallowInterceptTouchEvent(canScroll());
     }
 
