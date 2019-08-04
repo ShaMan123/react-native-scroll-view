@@ -1,11 +1,12 @@
 package io.autodidact.zoomablescrollview;
 
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 
 public class VelocityHelper {
-    VelocityTracker mVelocityTracker;
+    private VelocityTracker mVelocityTracker;
     protected PointF mVelocity = new PointF(0, 0);
     protected PointF prevVelocity = new PointF();
 
@@ -27,5 +28,13 @@ public class VelocityHelper {
 
     public PointF getVelocity() {
         return mVelocity;
+    }
+
+    public static Point sign(Point p) {
+        return sign(new PointF(p));
+    }
+
+    public static Point sign(PointF p) {
+        return new Point((int)(p.x / Math.abs(p.x)), (int)(p.y / Math.abs(p.y)));
     }
 }

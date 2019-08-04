@@ -74,6 +74,7 @@ export default class App extends Component<Props> {
                 style={{ backgroundColor: 'red', flexWrap:'wrap',  flexDirection: 'row', top: this.state.a, alignItems: 'center', justifyContent:'center' }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={5}
+                zoomScale={index+1}
                 key={`customview${index}`}
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>

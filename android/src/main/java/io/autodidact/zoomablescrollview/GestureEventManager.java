@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;
@@ -41,6 +42,14 @@ public class GestureEventManager {
     }
     */
 
+    public ScaleGestureHelper getScaleGestureHelper() {
+        return scaleGestureHelper;
+    }
+
+    public TranslateGestureHelper getTranslateGestureHelper() {
+        return translateGestureHelper;
+    }
+
     public Matrix getMatrix() {
         return mMatrix;
     }
@@ -59,13 +68,12 @@ public class GestureEventManager {
         canvas.setMatrix(measureTransformedView.getAbsoluteMatrix());
     }
 
-    public void requestDisallowInterceptTouchEvent() {
-        mView.requestDisallowInterceptTouchEvent(translateGestureHelper.canScroll(mVelocityHelper.getVelocity()));
+    public boolean requestDisallowInterceptTouchEvent() {
+        return translateGestureHelper.canScroll(mVelocityHelper.getVelocity());
     }
 
     public boolean onTouchEvent(MotionEvent event) {
         mVelocityHelper.onTouchEvent(event);
-        requestDisallowInterceptTouchEvent();
         mAppliedChange = false;
         if(scaleGestureHelper.onTouchEvent(event)) {
             translateGestureHelper.resetTouchPointers();
@@ -78,4 +86,58 @@ public class GestureEventManager {
         return mAppliedChange;
     }
 
+     /*
+
+    public boolean requestDisallowInterceptTouchEvent() {
+        return mRequestDisallowInterceptTouchEvent;
+    }
+
+
+    private PointF down = new PointF();
+    private PointF crossThreshold = new PointF();
+    private boolean mDisallowIntercept = true;
+    Point direction = new Point();
+    private int minThreshold = 50;
+    private boolean mRequestDisallowInterceptTouchEvent = true;
+
+    public boolean onTouchEvent(MotionEvent event) {
+        mVelocityHelper.onTouchEvent(event);
+        int action = event.getActionMasked();
+        PointF pointer = new PointF(event.getX(), event.getY());
+
+        if(action == MotionEvent.ACTION_DOWN) down.set(event.getX(), event.getY());
+        boolean disallowIntercept = translateGestureHelper.canScroll(mVelocityHelper.getVelocity());
+
+        mAppliedChange = false;
+        if(scaleGestureHelper.onTouchEvent(event)) {
+            translateGestureHelper.resetTouchPointers();
+            mAppliedChange = true;
+        }
+        if(translateGestureHelper.onTouchEvent(event)) {
+            mAppliedChange = true;
+        }
+
+        if(!disallowIntercept && mDisallowIntercept) {
+            PointF velocity = mVelocityHelper.getVelocity();
+            direction = VelocityHelper.sign(velocity);
+            crossThreshold.set(pointer);
+            crossThreshold.offset(direction.x * minThreshold, direction.y * minThreshold);
+            //event.offsetLocation(down.x, down.y);
+            Matrix m = new Matrix();
+            m.setTranslate(-pointer.x, -pointer.y);
+            event.transform(m);
+        }
+        else if(!disallowIntercept) {
+            crossThreshold.offset(-pointer.x, -pointer.y);
+            mRequestDisallowInterceptTouchEvent = !VelocityHelper.sign(crossThreshold).equals(direction);
+        }
+
+        mDisallowIntercept = disallowIntercept;
+        if(action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
+            mRequestDisallowInterceptTouchEvent = true;
+        }
+
+        return mAppliedChange;
+    }
+    */
 }

@@ -9,11 +9,8 @@ import com.facebook.react.uimanager.ThemedReactContext;
 public class MeasureTransformedView implements IGestureDetector.MesaureTransformedView {
     private RectF mLayout = new RectF();
     private Rect mViewPort;
-    Matrix matrix;
-
-    interface MatrixProvider {
-        Matrix getMatrix();
-    }
+    private Matrix matrix;
+    private boolean mInitialized = false;
 
     MeasureTransformedView(ThemedReactContext context, Matrix matrix){
         mViewPort = new MeasureUtility(context).getUsableViewPort();
@@ -22,6 +19,11 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
 
     public void setLayout(int l, int t, int r, int b){
         mLayout.set(l, t, r, b);
+        mInitialized = true;
+    }
+
+    private void validateState() {
+        if(!mInitialized) throw new IllegalStateException("MeasureTransformedView has not been initialized yet");
     }
 
     public boolean contains(){
@@ -29,6 +31,7 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
     }
 
     public Matrix getAbsoluteMatrix(){
+        validateState();
         Matrix m = new Matrix();
         m.preTranslate(mViewPort.left, mViewPort.top);
         m.preTranslate(mLayout.left, mLayout.top);
@@ -37,6 +40,7 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
     }
 
     public RectF getAbsoluteLayoutRect(){
+        validateState();
         RectF out = new RectF(mLayout);
         out.offset(mViewPort.left, mViewPort.top);
         return out;

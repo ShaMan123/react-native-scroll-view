@@ -20,6 +20,7 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
     private Matrix matrix;
     private boolean mAppliedChange;
     MeasureTransformedView measureTransformedView;
+    private boolean mDidInitScale = false;
 
     ScaleGestureHelper(ThemedReactContext context, Matrix matrix, MeasureTransformedView measureTransformedView) {
         mScaleDetector = new ScaleGestureDetector(context, this){
@@ -35,7 +36,14 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
         this.matrix = matrix;
         this.measureTransformedView = measureTransformedView;
     }
-
+/*
+    public void setInitialScale(float scale){
+        if(mDidInitScale) return;
+        mDidInitScale = true;
+        mScale = clampScale(scale);
+        matrix.postScale(mScale, mScale, 0, 0);
+    }
+*/
     public float getScale() {
         return mScale;
     }

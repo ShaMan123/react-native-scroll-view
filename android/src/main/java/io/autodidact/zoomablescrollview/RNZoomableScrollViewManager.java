@@ -3,6 +3,7 @@ package io.autodidact.zoomablescrollview;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
 
 import java.util.Map;
 
@@ -25,22 +26,27 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
     protected RNZoomableScrollView createViewInstance(@Nonnull ThemedReactContext reactContext) {
         return new RNZoomableScrollView(reactContext);
     }
-/*
+
+    @ReactProp(name = "zoomScale", defaultFloat = 1f)
+    public void setZoomScale(RNZoomableScrollView view, float value){
+        //view.getGestureManager().getScaleGestureHelper().setInitialScale(value);
+    }
+
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)
-    public void setMinimumZoomScale(RNZoomView view, float value){
-        view.getTransformHandler().setMinimunScale(value);
+    public void setMinimumZoomScale(RNZoomableScrollView view, float value){
+        view.getGestureManager().getScaleGestureHelper().setMinimumScale(value);
     }
 
     @ReactProp(name = "maximumZoomScale", defaultFloat = 3.0f)
-    public void setMaximumZoomScale(RNZoomView view, @Nullable float value){
-        view.getTransformHandler().setMaximunScale(value);
+    public void setMaximumZoomScale(RNZoomableScrollView view, @Nullable float value){
+        view.getGestureManager().getScaleGestureHelper().setMaximumScale(value);
     }
 
     @ReactProp(name = "dispatchScrollEvents", defaultBoolean = true)
-    public void setEventType(RNZoomView view, boolean value){
-        view.setDispatchScrollEvents(value);
+    public void setEventType(RNZoomableScrollView view, boolean value){
+        //view.setDispatchScrollEvents(value);
     }
-*/
+
     @Override
     public @Nullable
     Map getExportedCustomDirectEventTypeConstants() {
