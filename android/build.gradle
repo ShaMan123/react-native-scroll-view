@@ -67,7 +67,6 @@ allprojects {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.jsibbold:zoomage:1.3.0'
 }
 
 
