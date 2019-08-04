@@ -16,13 +16,17 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
     private GestureDetector mGestureDetector;
     private float mScale = 1f;
     private PointF displacement = new PointF(0, 0);
+    private PointF prevDisplacement = new PointF(0, 0);
+    private PointF rawlastDisplacement = new PointF();
     private PointF lastDisplacement = new PointF();
     Matrix matrix = new Matrix();
     private PointF pointer = new PointF();
     private PointF prevPointer = new PointF();
     private int prevPointerId = -1;
-    VelocityTracker mVelocityTracker;
     GestureHelper gestureHelper;
+    private boolean mDidChange;
+    private RectB mCanOffset = new RectB();
+
 
     public CombinedGestureDetector(ThemedReactContext context, GestureHelper helper){
         mScaleDetector = new ScaleGestureDetector(context, this){
@@ -41,11 +45,12 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
         return matrix;
     }
 
-    public void onTouchEvent(MotionEvent ev) {
+    public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getActionMasked();
         int index = ev.getActionIndex();
         int pointerId = ev.getPointerId(index);
         if(prevPointerId == -1) prevPointerId = pointerId;
+        mDidChange = false;
 
         pointer.set(ev.getX(index), ev.getY(index));
 
@@ -54,32 +59,21 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
             prevPointer.set(pointer);
         }
 
-        if(action == MotionEvent.ACTION_DOWN){ mVelocityTracker = VelocityTracker.obtain(); }
-        mVelocityTracker.addMovement(ev);
-        mVelocityTracker.computeCurrentVelocity(1);
-        if(action == MotionEvent.ACTION_UP) { mVelocityTracker.recycle(); }
-
-        lastDisplacement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
-        lastDisplacement.set(gestureHelper.clampOffset(displacement, lastDisplacement));
+        rawlastDisplacement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
+        mCanOffset = gestureHelper.clampOffset(lastDisplacement, displacement, rawlastDisplacement);
         matrix.postTranslate(lastDisplacement.x, lastDisplacement.y);
         displacement.offset(lastDisplacement.x, lastDisplacement.y);
+        if(!displacement.equals(prevDisplacement)) mDidChange = true;
+        prevDisplacement.set(displacement);
 
-
-        gestureHelper.onChange(matrix);
+        //if(mDidChange) gestureHelper.onChange(matrix);
 
         prevPointer.set(pointer);
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
             prevPointer = null;
         }
 
-
-/*
-        if(action == MotionEvent.ACTION_UP){
-            PointF a = gestureHelper.getTopLeftMaxDisplacement();
-            matrix.postTranslate(-a.x, -a.y);
-
-        }
-        */
+        return mDidChange;
     }
 
     public void postScale() {
@@ -89,6 +83,7 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
     public void postScale(ScaleGestureDetector detector){
         float scaleBy = clampScaleFactor(detector.getScaleFactor());
         mScale *= scaleBy;
+        if(scaleBy != 1) mDidChange = true;
         //RectF src = layoutRect(false);
         //src.offset(-viewPort.left, -viewPort.top);
         //matrix.postScale(scaleBy, scaleBy, src.centerX(), src.centerY());
@@ -124,7 +119,9 @@ public class CombinedGestureDetector implements ScaleGestureDetector.OnScaleGest
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            gestureHelper.zoomTo(new RectF(0, 0, e.getX(), e.getY()));
+            RectF z = new RectF(-1, -1, 1, 1);
+            z.offset(e.getX(), e.getY());
+            gestureHelper.zoomTo(z);
             return true;
         }
 

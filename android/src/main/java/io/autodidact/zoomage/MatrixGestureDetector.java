@@ -31,9 +31,9 @@ public class MatrixGestureDetector implements IGestureDetector {
         this(new Matrix(), listener);
     }
 
-    public void onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         if (event.getPointerCount() > 2) {
-            return;
+            return false;
         }
 
         int action = event.getActionMasked();
@@ -79,6 +79,8 @@ public class MatrixGestureDetector implements IGestureDetector {
                 mCount--;
                 break;
         }
+
+        return true;
     }
 
     public MatrixGestureDetector setRotationEnabled(boolean enabled) {

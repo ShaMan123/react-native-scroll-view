@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.ViewGroup;
 
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -19,6 +20,7 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     IGestureDetector combinedGestureDetector;
     RectF layout = new RectF();
     Rect mViewPort;
+    public VelocityHelper velocityHelper = new VelocityHelper();
 
     RNZoomView(ThemedReactContext context){
         this(context, IGestureDetector.GestureDetectors.COMBINED_GESTURE_DETECTOR);
@@ -96,10 +98,17 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     }
 
     @Override
+    public void requestDisallowInterceptTouchEvent() {
+        super.requestDisallowInterceptTouchEvent(canScroll());
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         //if(super.onTouchEvent(event)) return true;
-        requestDisallowInterceptTouchEvent(true);
+        velocityHelper.onTouchEvent(event);
+        requestDisallowInterceptTouchEvent();
         combinedGestureDetector.onTouchEvent(event);
+        postInvalidateOnAnimation();
         return true;
     }
 
@@ -113,6 +122,8 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     private float maxScale = 3f;
     private float[] values = new float[9];
 
+
+    // legacy for MatrixGestureDetector
     @Override
     public void onChange(Matrix matrix) {
         /*
@@ -165,11 +176,16 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     @Override
     public void zoomTo(RectF dst) {
         Matrix m = new Matrix();
-        m.setRectToRect(getTransformedRect(), dst, Matrix.ScaleToFit.FILL);
+        Matrix src = new Matrix(getMatrix());
+        m.setRectToRect(dst, getTransformedRect(), Matrix.ScaleToFit.CENTER);
         Log.d(TAG, "zoomTo: " + m);
-        getMatrix().postConcat(m);
+        src.postConcat(m);
+        src.postRotate(15);
         onChange(getMatrix());
+        invalidate();
     }
+
+    private IGestureDetector.RectB canOffset = new IGestureDetector.RectB();
 
     @Override
     public RectF getClippingRect() {
@@ -213,27 +229,52 @@ public class RNZoomView extends ViewGroup implements IGestureDetector.GestureHel
     }
 
     @Override
-    public PointF clampOffset(PointF distance) {
-        PointF topLeft = getTopLeftMaxDisplacement();
-        PointF bottomRight = getBottomRightMaxDisplacement();
+    public boolean canScroll() {
+        PointF mVelocity = velocityHelper.getVelocity();
+        boolean scrollX = mVelocity.x == 0 ? true : mVelocity.x > 0 ? canOffset.left : canOffset.right;
+        boolean scrollY = mVelocity.y == 0 ? true : mVelocity.y > 0 ? canOffset.top : canOffset.bottom;
 
-        return new PointF();
+        return mVelocity.x > mVelocity.y ? scrollX : scrollY;
+        /*
+        return new IGestureDetector.RectB(
+                mVelocity.x >= 0 && canOffset.left,
+                mVelocity.y >= 0 && canOffset.top,
+                mVelocity.x <= 0 && canOffset.right,
+                mVelocity.y <= 0 && canOffset.bottom
+        );
+        */
     }
 
     @Override
-    public PointF clampOffset(PointF distance, PointF offset) {
-        PointF out = new PointF(offset.x, offset.y);
+    public IGestureDetector.RectB clampOffset(PointF out, PointF distance) {
+        return clampOffset(out, distance, new PointF(0, 0));
+    }
+
+    @Override
+    public IGestureDetector.RectB clampOffset(PointF out, PointF distance, PointF offset) {
+        IGestureDetector.RectB mCanOffset = new IGestureDetector.RectB(false);
+        out.set(offset);
         RectF clippingRect = getClippingRect();
         RectF transformed = getTransformedRect();
         transformed.offset(offset.x, offset.y);
 
-        if(transformed.width() <= clippingRect.width()) out.x = 0;
-        else if(transformed.left > clippingRect.left ) out.offset(clippingRect.left - transformed.left, 0);
+        boolean wIsContained = transformed.width() <= clippingRect.width();
+        boolean hIsContained = transformed.height() <= clippingRect.height();
+
+        if(transformed.left < clippingRect.left && !wIsContained) mCanOffset.left = true;
+        if(transformed.right > clippingRect.right && !wIsContained) mCanOffset.right = true;
+        if(transformed.top < clippingRect.top && !hIsContained) mCanOffset.top = true;
+        if(transformed.bottom > clippingRect.bottom && !hIsContained) mCanOffset.bottom = true;
+
+        if(wIsContained) out.x = 0;
+        else if(transformed.left > clippingRect.left) out.offset(clippingRect.left - transformed.left, 0);
         else if(transformed.right < clippingRect.right) out.offset(clippingRect.right - transformed.right, 0);
 
-        if(transformed.height() <= clippingRect.height()) out.y = 0;
+        if(hIsContained) out.y = 0;
         else if(transformed.top > clippingRect.top) out.offset(0, clippingRect.top - transformed.top);
         else if(transformed.bottom < clippingRect.bottom) out.offset(0, clippingRect.bottom - transformed.bottom);
-        return out;
+
+        canOffset.set(mCanOffset);
+        return mCanOffset;
     }
 }
