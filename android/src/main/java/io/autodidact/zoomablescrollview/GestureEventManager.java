@@ -59,14 +59,11 @@ public class GestureEventManager {
         canvas.setMatrix(measureTransformedView.getAbsoluteMatrix());
     }
 
-
-    //@Override
     public void requestDisallowInterceptTouchEvent() {
         mView.requestDisallowInterceptTouchEvent(translateGestureHelper.canScroll(mVelocityHelper.getVelocity()));
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        //if(super.onTouchEvent(event)) return true;
         mVelocityHelper.onTouchEvent(event);
         requestDisallowInterceptTouchEvent();
         mAppliedChange = false;
@@ -77,8 +74,6 @@ public class GestureEventManager {
         if(translateGestureHelper.onTouchEvent(event)) {
             mAppliedChange = true;
         }
-
-        mView.postInvalidateOnAnimation();
 
         return mAppliedChange;
     }

@@ -1,10 +1,13 @@
 package io.autodidact.zoomablescrollview;
 
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
+
+import androidx.annotation.Nullable;
 
 public class TranslateGestureHelper implements IGestureDetector.TranslateHelper, GestureEventData.Displacement {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -53,7 +56,7 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
         boolean scrollX = velocity.x == 0 ? true : velocity.x > 0 ? canOffset.left : canOffset.right;
         boolean scrollY = velocity.y == 0 ? true : velocity.y > 0 ? canOffset.top : canOffset.bottom;
 
-        return velocity.x > velocity.y ? scrollX : scrollY;
+        return Math.abs(velocity.x) > Math.abs(velocity.y) ? scrollX : scrollY;
         /*
         return new RectB(
                 mVelocity.x >= 0 && canOffset.left,
@@ -62,6 +65,32 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
                 mVelocity.y <= 0 && canOffset.bottom
         );
         */
+    }
+
+    public boolean scrollTo(PointF scrollTo){
+        return scrollTo(scrollTo, null);
+    }
+
+    public boolean scrollTo(PointF scrollTo, @Nullable PointF out) {
+        PointF p = new PointF();
+        RectF transformedRect = measureTransformedView.getTransformedRect();
+        p.set(scrollTo);
+        p.offset(-transformedRect.left, -transformedRect.top);
+        return scrollBy(p, out);
+    }
+
+    public boolean scrollBy(PointF scrollBy) {
+        return scrollBy(scrollBy, null);
+    }
+
+    public boolean scrollBy(PointF scrollBy, @Nullable PointF out) {
+        if(out == null) out = new PointF();
+        clampOffset(out, total, scrollBy);
+        matrix.postTranslate(out.x, out.y);
+        total.offset(out.x, out.y);
+        boolean mAppliedChange = !total.equals(previousTotal);
+        previousTotal.set(total);
+        return mAppliedChange;
     }
 
     @Override
@@ -99,7 +128,7 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
 
 
     public PointF total = new PointF(0, 0);
-    public PointF previous = new PointF(0, 0);
+    public PointF previousTotal = new PointF(0, 0);
     public PointF raw = new PointF();
     public PointF clamped = new PointF();
     private PointF pointer = new PointF();
@@ -128,8 +157,8 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
         clampOffset(clamped, total, raw);
         matrix.postTranslate(clamped.x, clamped.y);
         total.offset(clamped.x, clamped.y);
-        if(!total.equals(previous)) mAppliedChange = true;
-        previous.set(total);
+        if(!total.equals(previousTotal)) mAppliedChange = true;
+        previousTotal.set(total);
 
         prevPointer.set(pointer);
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {

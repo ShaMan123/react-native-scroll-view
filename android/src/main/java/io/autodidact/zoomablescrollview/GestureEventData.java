@@ -9,13 +9,15 @@ public class GestureEventData {
     PointF pointer;
     boolean changed;
     Matrix matrix;
+    float scale;
     Displacement displacement;
     PointF velocity;
 
-    GestureEventData(PointF pointer, boolean changed, Matrix matrix, Displacement displacement, PointF velocity){
+    GestureEventData(PointF pointer, boolean changed, Matrix matrix, float scale, Displacement displacement, PointF velocity){
         this.pointer = pointer;
         this.changed = changed;
         this.matrix = matrix;
+        this.scale = scale;
         this.displacement = displacement;
         this.velocity = velocity;
     }
@@ -23,7 +25,7 @@ public class GestureEventData {
     interface Displacement {
         PointF clamped = null;
         PointF raw = null;
-        PointF previous = null;
+        //PointF previousTotal = null;
         PointF total = null;
     }
 
