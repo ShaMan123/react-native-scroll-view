@@ -1,5 +1,6 @@
 package io.autodidact.zoomablescrollview;
 
+import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -11,8 +12,8 @@ import android.view.ScaleGestureDetector;
 import com.facebook.react.uimanager.ThemedReactContext;
 
 public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnDoubleTapListener {
-    private static final String TAG = RNZoomableScrollView.class.getSimpleName() + ":" + ScaleGestureHelper.class.getSimpleName();
-    protected float mScale = 1f;
+    private static final String TAG = ScaleGestureHelper.class.getSimpleName();
+    private float mScale = 1f;
     private float minScale = 0.75f;
     private float maxScale = 3f;
     private ScaleGestureDetector mScaleDetector;
@@ -29,13 +30,13 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
                 return event.getPointerCount() > 1 && super.onTouchEvent(event);
             }
         };
-
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener());
         mGestureDetector.setOnDoubleTapListener(this);
 
         this.matrix = matrix;
         this.measureTransformedView = measureTransformedView;
     }
+
 /*
     public void setInitialScale(float scale){
         if(mDidInitScale) return;
@@ -52,7 +53,7 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
     public void forceUpdateFromMatrix() {
         float[] values = new float[9];
         matrix.getValues(values);
-        mScale = values[Matrix.MSCALE_X];
+        mScale = clampScale(values[Matrix.MSCALE_X]);
     }
 
     @Override
@@ -89,10 +90,6 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
 
     private float clampScaleFactor(float scaleBy){
         return clampScaleFactor(mScale, scaleBy);
-    }
-
-    public void postScale() {
-        postScale(mScaleDetector);
     }
 
     public void postScale(ScaleGestureDetector detector){
