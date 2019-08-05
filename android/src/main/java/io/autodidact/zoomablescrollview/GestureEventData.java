@@ -25,8 +25,6 @@ public class GestureEventData {
     interface Displacement {
         PointF clamped = null;
         PointF raw = null;
-        //PointF previousTotal = null;
-        PointF total = null;
     }
 
     interface GestureEventListener {

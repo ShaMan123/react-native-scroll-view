@@ -28,7 +28,7 @@ public interface IGestureDetector {
         float getMaximumScale();
         float clampScaleFactor(float currentScale, float scaleBy);
         float clampScale(float scale);
-        void zoomTo(RectF dst);
+        void forceUpdateFromMatrix();
     }
 
     interface TranslateHelper {
@@ -36,10 +36,20 @@ public interface IGestureDetector {
         PointF getTopLeftMaxDisplacement(PointF distance);
         PointF getBottomRightMaxDisplacement();
         PointF getBottomRightMaxDisplacement(PointF distance);
-        RectB clampOffset(PointF out, PointF distance, PointF offset);
-        RectB clampOffset(PointF out, PointF distance);
+        PointF clampOffset(PointF offset);
+        void computeScroll();
         RectB canOffset = new RectB();
         boolean canScroll(PointF velocity);
+        void forceUpdateFromMatrix();
+    }
+
+    interface ScrollResponder {
+        void scrollTo(float x, float y, boolean animated);
+        void scrollBy(float x, float y, boolean animated);
+        void scrollToEnd(boolean animated);
+        void zoomToRect(float x, float y, float width, float height, boolean animated);
+        void zoomToRect(RectF rect, boolean animated);
+        void flashScrollIndicators();
     }
 
     interface GestureHelper extends OnMatrixChangeListener {

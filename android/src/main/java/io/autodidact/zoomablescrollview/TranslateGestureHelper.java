@@ -1,13 +1,12 @@
 package io.autodidact.zoomablescrollview;
 
 import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 public class TranslateGestureHelper implements IGestureDetector.TranslateHelper, GestureEventData.Displacement {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -67,40 +66,20 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
         */
     }
 
-    public boolean scrollTo(PointF scrollTo){
-        return scrollTo(scrollTo, null);
-    }
-
-    public boolean scrollTo(PointF scrollTo, @Nullable PointF out) {
-        PointF p = new PointF();
-        RectF transformedRect = measureTransformedView.getTransformedRect();
-        p.set(scrollTo);
-        p.offset(-transformedRect.left, -transformedRect.top);
-        return scrollBy(p, out);
-    }
-
-    public boolean scrollBy(PointF scrollBy) {
-        return scrollBy(scrollBy, null);
-    }
-
-    public boolean scrollBy(PointF scrollBy, @Nullable PointF out) {
-        if(out == null) out = new PointF();
-        clampOffset(out, total, scrollBy);
-        matrix.postTranslate(out.x, out.y);
-        total.offset(out.x, out.y);
-        boolean mAppliedChange = !total.equals(previousTotal);
-        previousTotal.set(total);
-        return mAppliedChange;
+    @Override
+    public void forceUpdateFromMatrix() {
+        computeScroll();
     }
 
     @Override
-    public RectB clampOffset(PointF out, PointF distance) {
-        return clampOffset(out, distance, new PointF(0, 0));
+    public void computeScroll() {
+        clampOffset(new PointF(0, 0));
     }
 
     @Override
-    public RectB clampOffset(PointF out, PointF distance, PointF offset) {
+    public PointF clampOffset(PointF offset) {
         RectB mCanOffset = new RectB(false);
+        PointF out =  new PointF();
         out.set(offset);
         RectF clippingRect = measureTransformedView.getClippingRect();
         RectF transformed = measureTransformedView.getTransformedRect();
@@ -123,12 +102,37 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
         else if(transformed.bottom < clippingRect.bottom) out.offset(0, clippingRect.bottom - transformed.bottom);
 
         canOffset.set(mCanOffset);
-        return mCanOffset;
+        return out;
     }
 
+    public boolean scrollTo(PointF scrollTo) {
+        PointF p = new PointF();
+        RectF transformedRect = measureTransformedView.getTransformedRect();
+        p.set(scrollTo);
+        p.offset(-transformedRect.left, -transformedRect.top);
+        return scrollBy(p);
+    }
 
-    public PointF total = new PointF(0, 0);
-    public PointF previousTotal = new PointF(0, 0);
+    public boolean scrollBy(PointF scrollBy) {
+        PointF out = clampOffset(scrollBy);
+        matrix.postTranslate(out.x, out.y);
+        return out.length() > 0;
+    }
+
+    public void scrollToEnd(boolean horizontal) {
+        PointF p = getBottomRightMaxDisplacement();
+        if(horizontal){
+            p.x = 0;
+        }
+        else {
+            p.y = 0;
+            if(measureTransformedView.getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL){
+                p.negate();
+            }
+        }
+        scrollBy(p);
+    }
+
     public PointF raw = new PointF();
     public PointF clamped = new PointF();
     private PointF pointer = new PointF();
@@ -136,7 +140,6 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
     private int prevPointerId = -1;
     private boolean mAppliedChange;
     private boolean mResetPrevPointer = false;
-
 
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getActionMasked();
@@ -154,14 +157,12 @@ public class TranslateGestureHelper implements IGestureDetector.TranslateHelper,
         }
 
         raw.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
-        clampOffset(clamped, total, raw);
+        clamped.set(clampOffset(raw));
         matrix.postTranslate(clamped.x, clamped.y);
-        total.offset(clamped.x, clamped.y);
-        if(!total.equals(previousTotal)) mAppliedChange = true;
-        previousTotal.set(total);
+        if(clamped.length() > 0) mAppliedChange = true;
 
         prevPointer.set(pointer);
-        if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
+        if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL) {
             prevPointer = null;
         }
 

@@ -6,12 +6,22 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import androidx.core.view.ViewCompat;
+
+import com.facebook.react.modules.i18nmanager.I18nUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 
 public class MeasureUtility {
     private ThemedReactContext mContext;
+
     public MeasureUtility(ThemedReactContext context){
         mContext = context;
+    }
+
+    public int getLayoutDirection(){
+        return I18nUtil.getInstance().isRTL(mContext)
+                ? ViewCompat.LAYOUT_DIRECTION_RTL
+                : ViewCompat.LAYOUT_DIRECTION_LTR;
     }
 
     public Rect getUsableViewPort(){

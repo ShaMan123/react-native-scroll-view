@@ -11,10 +11,17 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
     private Rect mViewPort;
     private Matrix matrix;
     private boolean mInitialized = false;
+    private int mLayoutDirection;
 
     MeasureTransformedView(ThemedReactContext context, Matrix matrix){
-        mViewPort = new MeasureUtility(context).getUsableViewPort();
+        MeasureUtility measureUtility = new MeasureUtility(context);
+        mViewPort = measureUtility.getUsableViewPort();
+        mLayoutDirection = measureUtility.getLayoutDirection();
         this.matrix = matrix;
+    }
+
+    public int getLayoutDirection(){
+        return mLayoutDirection;
     }
 
     public void setLayout(int l, int t, int r, int b){

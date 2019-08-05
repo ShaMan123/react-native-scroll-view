@@ -7,12 +7,13 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 import com.facebook.react.uimanager.ThemedReactContext;
 
-public class GestureEventManager {
+public class GestureEventManager implements IGestureDetector.ScrollResponder {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private IGestureDetector combinedGestureDetector;
     private Matrix mMatrix = new Matrix();
@@ -22,6 +23,7 @@ public class GestureEventManager {
     private TranslateGestureHelper translateGestureHelper;
     private boolean mAppliedChange;
     private VelocityHelper mVelocityHelper;
+    private boolean mIsHorizontal = false;
 
     GestureEventManager(ThemedReactContext context, ViewGroup view){
         measureTransformedView = new MeasureTransformedView(context, mMatrix);
@@ -29,6 +31,10 @@ public class GestureEventManager {
         scaleGestureHelper = new ScaleGestureHelper(context, mMatrix, measureTransformedView);
         translateGestureHelper = new TranslateGestureHelper(mMatrix, measureTransformedView);
         mVelocityHelper = new VelocityHelper();
+    }
+
+    public void setHorizontal() {
+        mIsHorizontal = true;
     }
 
     /*
@@ -52,6 +58,47 @@ public class GestureEventManager {
 
     public Matrix getMatrix() {
         return mMatrix;
+    }
+
+    @Override
+    public void scrollTo(float x, float y, boolean animated) {
+        translateGestureHelper.scrollTo(new PointF(x, y));
+        mView.postInvalidateOnAnimation();
+    }
+
+    @Override
+    public void scrollBy(float x, float y, boolean animated) {
+        translateGestureHelper.scrollBy(new PointF(x, y));
+        mView.postInvalidateOnAnimation();
+    }
+
+    @Override
+    public void scrollToEnd(boolean animated) {
+        translateGestureHelper.scrollToEnd(mIsHorizontal);
+        mView.postInvalidateOnAnimation();
+    }
+
+    @Override
+    public void zoomToRect(float x, float y, float width, float height, boolean animated) {
+        zoomToRect(new RectF(x, y, x + width, y + height), animated);
+    }
+
+    @Override
+    public void zoomToRect(RectF dst, boolean animated) {
+        mMatrix.setRectToRect(dst, measureTransformedView.getAbsoluteLayoutRect(), Matrix.ScaleToFit.CENTER);
+        forceUpdateFromMatrix();
+        mView.postInvalidateOnAnimation();
+    }
+
+    protected void forceUpdateFromMatrix() {
+        scaleGestureHelper.forceUpdateFromMatrix();
+        translateGestureHelper.forceUpdateFromMatrix();
+    }
+
+    @Override
+    public void flashScrollIndicators() {
+
+        //mView.postInvalidateOnAnimation();
     }
 
     public void setLayoutRect(int l, int t, int r, int b){

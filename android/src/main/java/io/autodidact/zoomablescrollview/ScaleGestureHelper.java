@@ -1,6 +1,7 @@
 package io.autodidact.zoomablescrollview;
 
 import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -11,10 +12,9 @@ import com.facebook.react.uimanager.ThemedReactContext;
 
 public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnDoubleTapListener {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName() + ":" + ScaleGestureHelper.class.getSimpleName();
-    private float mScale = 1f;
+    protected float mScale = 1f;
     private float minScale = 0.75f;
     private float maxScale = 3f;
-    private float[] values = new float[9];
     private ScaleGestureDetector mScaleDetector;
     private GestureDetector mGestureDetector;
     private Matrix matrix;
@@ -49,6 +49,13 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
     }
 
     @Override
+    public void forceUpdateFromMatrix() {
+        float[] values = new float[9];
+        matrix.getValues(values);
+        mScale = values[Matrix.MSCALE_X];
+    }
+
+    @Override
     public float getMinimumScale() {
         return minScale;
     }
@@ -80,21 +87,8 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
         return clamp(getMinimumScale() / currentScale, scaleBy, getMaximumScale() / currentScale);
     }
 
-    @Override
-    public void zoomTo(RectF dst) {
-        Matrix m = new Matrix();
-        Matrix src = new Matrix(matrix);
-        m.setRectToRect(dst, measureTransformedView.getTransformedRect(), Matrix.ScaleToFit.CENTER);
-        Log.d(TAG, "zoomTo: " + m);
-        src.postConcat(m);
-        src.postRotate(15);
-        //onChange(getMatrix());
-        //mView.invalidate();
-    }
-
-    public boolean onTouchEvent(MotionEvent event) {
-        mAppliedChange = false;
-        return mGestureDetector.onTouchEvent(event) ||  mScaleDetector.onTouchEvent(event);
+    private float clampScaleFactor(float scaleBy){
+        return clampScaleFactor(mScale, scaleBy);
     }
 
     public void postScale() {
@@ -103,16 +97,23 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
 
     public void postScale(ScaleGestureDetector detector){
         float scaleBy = clampScaleFactor(detector.getScaleFactor());
-        mScale *= scaleBy;
-        if(scaleBy != 1) mAppliedChange = true;
-        //RectF src = layoutRect(false);
-        //src.offset(-viewPort.left, -viewPort.top);
-        //matrix.postScale(scaleBy, scaleBy, src.centerX(), src.centerY());
-        matrix.postScale(scaleBy, scaleBy, detector.getFocusX(), detector.getFocusY());
+        postScale(scaleBy, detector.getFocusX(), detector.getFocusY());
     }
 
-    private float clampScaleFactor(float scaleBy){
-        return clampScaleFactor(mScale, scaleBy);
+    public void setScale(float scale, float focusX, float focusY, boolean animated){
+        postScale(scale / mScale, focusX, focusY);
+    }
+
+    public void postScale(float scaleBy, float focusX, float focusY){
+        float outScaleBy = clampScaleFactor(scaleBy);
+        mScale *= outScaleBy;
+        if(outScaleBy != 1) mAppliedChange = true;
+        matrix.postScale(outScaleBy, outScaleBy, focusX, focusY);
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        mAppliedChange = false;
+        return mGestureDetector.onTouchEvent(event) ||  mScaleDetector.onTouchEvent(event);
     }
 
     @Override
@@ -139,9 +140,11 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        RectF z = new RectF(-1, -1, 1, 1);
-        z.offset(e.getX(), e.getY());
-        zoomTo(z);
+        float min = Math.max(1, minScale);
+        float max = maxScale;
+        float m = (min + max) / 2;
+        float scaleTo = mScale > m ? max : min;
+        setScale(scaleTo, e.getX(), e.getY(), true);
         return true;
     }
 

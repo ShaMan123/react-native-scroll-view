@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated, Button } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
@@ -27,6 +27,8 @@ const GHViewPager = createNativeWrapper(ViewPager, { shouldActivateOnStart: fals
 type Props = {};
 export default class App extends Component<Props> {
     state = { a: 150 }
+    scrollRefs = [React.createRef(), React.createRef()];
+    selectedPage = 0;
     componentDidMount() {
         //setTimeout(() => this.setState({ a: 200 }), 5000);
     }
@@ -71,11 +73,13 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flexWrap:'wrap',  flexDirection: 'row', top: this.state.a, alignItems: 'center', justifyContent:'center' }}
+                style={{ backgroundColor: 'red', flexWrap: 'wrap', flexDirection: 'row', top: this.state.a, alignItems: 'center', justifyContent: 'center' }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={5}
-                zoomScale={index+1}
+                zoomScale={index + 1}
                 key={`customview${index}`}
+                ref={this.scrollRefs[index]}
+                
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
                 <Image
@@ -98,14 +102,29 @@ export default class App extends Component<Props> {
         );
     }
 
+    getCurrentScrollRef() {
+        return this.scrollRefs[this.selectedPage].current;
+    }
+
+    onPress = () => {
+        this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 200, y: 400, width: 50, height: 50, animated: true});
+    }
+
     render() {
         return (
-            <GHViewPager
-                style={{flex:1}}
-            >
-                <View>{this.renderPage(0)}</View>
-                <View>{this.renderPage(1)}</View>
-            </GHViewPager>
+            <>
+                <GHViewPager
+                    style={{ flex: 1 }}
+                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
+                >
+                    <View>{this.renderPage(0)}</View>
+                    <View>{this.renderPage(1)}</View>
+                </GHViewPager>
+                <Button
+                    onPress={this.onPress}
+                    title='scrollTo'
+                />
+            </>
         );
     }
 
