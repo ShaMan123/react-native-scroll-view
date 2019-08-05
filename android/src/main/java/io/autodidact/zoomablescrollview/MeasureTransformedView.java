@@ -46,6 +46,18 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
         return m;
     }
 
+    public RectF fromRelativeToAbsolute(RectF src){
+        RectF dst = new RectF(src);
+        dst.offset(mViewPort.left, mViewPort.top);
+        return dst;
+    }
+
+    public RectF fromAbsoluteToRelative(RectF src){
+        RectF dst = new RectF(src);
+        dst.offset(-mViewPort.left, -mViewPort.top);
+        return dst;
+    }
+
     public RectF getAbsoluteLayoutRect(){
         validateState();
         RectF out = new RectF(mLayout);

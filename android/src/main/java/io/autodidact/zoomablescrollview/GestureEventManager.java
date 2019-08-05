@@ -85,7 +85,9 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
 
     @Override
     public void zoomToRect(RectF dst, boolean animated) {
-        mMatrix.setRectToRect(dst, measureTransformedView.getAbsoluteLayoutRect(), Matrix.ScaleToFit.CENTER);
+        RectF src = measureTransformedView.getAbsoluteLayoutRect();
+        mMatrix.setRectToRect(dst, src, Matrix.ScaleToFit.CENTER);
+        mMatrix.postTranslate(-src.left, -src.top);
         forceUpdateFromMatrix();
         mView.postInvalidateOnAnimation();
     }

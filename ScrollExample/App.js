@@ -107,7 +107,7 @@ export default class App extends Component<Props> {
     }
 
     onPress = () => {
-        this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 200, y: 400, width: 50, height: 50, animated: true});
+        this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 50, width: 720, height: 2400, animated: true});
     }
 
     render() {
