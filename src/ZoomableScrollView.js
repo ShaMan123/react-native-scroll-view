@@ -18,15 +18,18 @@ import {
 } from 'react-native';
 
 import './Events';
+import ScrollResponder from './ScrollResponder';
 
-const nativeViewName = 'RNZoomableScrollViewManager';
-const NativeView = requireNativeComponent(nativeViewName, ScrollView, {
+const nativeViewName = 'RNZoomableScrollView';
+const nativeViewManagerName = 'RNZoomableScrollViewManager';
+const nativeViewModulerName = 'RNZoomableScrollViewModule';
+const NativeView = requireNativeComponent(nativeViewManagerName, ScrollView, {
     nativeOnly: {
         nativeID: true
     }
 });
-const ViewManager = NativeModules[nativeViewName] || {};
-export const { Constants } = UIManager.getViewManagerConfig ? UIManager.getViewManagerConfig(nativeViewName) : UIManager[nativeViewName];
+const ViewManager = NativeModules[nativeViewManagerName] || NativeModules[nativeViewModulerName];
+export const { Constants } = UIManager.getViewManagerConfig ? UIManager.getViewManagerConfig(nativeViewManagerName) : UIManager[nativeViewManagerName];
 
 
 
@@ -101,16 +104,7 @@ export default class ScrollView extends Component {
         centerContent: PropTypes.bool,
         contentOffset: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
         contentInset: PropTypes.shape({ top: PropTypes.number, bottom: PropTypes.number, left: PropTypes.number, right: PropTypes.number, start: PropTypes.number, end: PropTypes.number }),
-        decelerationRate: function (props, propName, componentName) {
-            const val = props[propName];
-            if ((typeof val !== 'number' && !decelerationRate[val]) || (typeof val === 'number' && (val <= 0 || val >= 1))) {
-                return new Error(
-                    'Invalid prop `' + propName + '` supplied to' +
-                    ' `' + componentName + '`. Validation failed.' +
-                    'See documentation: https://facebook.github.io/react-native/docs/scrollview#decelerationrate'
-                );
-            }
-        },
+        //decelerationRate: Prop
         overScroll: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
         scrollEnabled: PropTypes.bool,
         directionalLockEnabled: PropTypes.bool,
@@ -175,62 +169,55 @@ export default class ScrollView extends Component {
             }, {})
     }
 
-    static onMoveShouldSetResponderDistance = 100;
+    _scrollResponder = new ScrollResponder(this);
+    _scrollNode;
+
+    _setRef = (ref) => {
+        this._scrollRef = ref;
+        this._scrollNode = findNodeHandle(this._scrollRef);
+    }
+
+    getScrollResponder() {
+        return this._scrollResponder;
+    }
+
+    getScrollRef() {
+        return this._scrollRef;
+    }
+
+    getScrollableNode() {
+        return this._scrollNode;
+    }
 
     getDecelerationRate() {
         return typeof this.props.decelerationRate === 'number' ? this.props.decelerationRate : decelerationRate[this.props.decelerationRate];
     }
-
-    getOverScroll(scale = this.getClampedScale()) {
-        return { x: this._overScroll.x / scale, y: this._overScroll.y / scale };
-    }
-
-    setOverScroll({ x, y }) {
+    
+    setMaxOverScroll({ x, y }) {
         
     }
 
-    scrollTo({ x, y, overScroll = false, scale = null, animated = true, callback = null }) {
-        
+    scrollTo(options) {
+        this._scrollResponder.scrollResponderScrollTo(options);
     }
 
-    scrollToEnd({ animated = true, callback = null }) {
-        this.scrollTo({ x: this.state.width, y: this.state.height, animated, callback });
+    scrollBy(options) {
+        //this._scrollResponder.scrollResponderScrollBy(options);
     }
 
-    scrollResponderZoomTo({ x, y, width, height, animated = true, callback = null }) {
-        // zoomToRect
-        const widthScale = this.state.width / width;
-        const heightScale = this.state.height / height;
-        const scale = this.getClampedScale(Math.min(widthScale, heightScale));
-        this.scrollTo({ x, y, scale, animated, callback });
-    }
-
-    scrollResponderScrollNativeHandleToKeyboard(reactNode = null, extraHeight, preventNegativeScrollOffset = true) {
-        this._overScroll.y = preventNegativeScrollOffset ? Math.max(extraHeight, 0) : extraHeight;
-    }
-
-    getNode() {
-        return findNodeHandle(this.ref);
-    }
-
-    getScrollResponder() {
-        //__DEV__ && console.log('`getScrollResponder` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
-        return this;
-    }
-
-    getScrollRef() {
-        //__DEV__ && console.log('`getScrollRef` is a dummy method pointing back to the `ScrollView`. Used for compatibility with iOS');
-        return this;
+    scrollToEnd(options) {
+        this._scrollResponder.scrollResponderScrollToEnd(options);
     }
 
     flashScrollIndicators() {
-        
+        this._scrollResponder.flashScrollIndicators(options);
     }
 
     render() {
         return (
             <NativeView
                 {...this.props}
+                ref={this._setRef}
                 onScroll={(e)=>console.log(e.nativeEvent)}
                 onScrollBeginDrag={(e)=>console.log('begin',e.nativeEvent)}
                 onScrollEndDrag={(e)=>console.log('end',e.nativeEvent)}
