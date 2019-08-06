@@ -2,17 +2,12 @@ package io.autodidact.zoomablescrollview;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
-
-import com.facebook.react.uimanager.ThemedReactContext;
 
 public class GestureEventManager implements IGestureDetector.ScrollResponder {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -113,17 +108,25 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
         //mView.postInvalidateOnAnimation();
     }
 
+    public void onLayout(boolean changed, int l, int t, int r, int b) {
+        RectF clip;
+        if(getMeasuringHelper().isInitialized()){
+            clip = getMeasuringHelper().getClippingRect();
+            mMatrix.preTranslate(-clip.left, -clip.top);
+        }
+        getMeasuringHelper().onLayout(changed, l, t, r, b);
+        clip = getMeasuringHelper().getClippingRect();
+        mMatrix.preTranslate(clip.left, clip.top);
+    }
+
     protected void onDraw(Canvas canvas) {
-        RectF dst1 = mMatrix.getTransformedRect();
-
-        Matrix m = new Matrix();
-        m.setRectToRect(new RectF(getMeasuringHelper().getLayout()), dst1, Matrix.ScaleToFit.START);
-
-        canvas.setMatrix(m);
+        canvas.setMatrix(mMatrix.getAbsoluteMatrix());
 
         Paint p = new Paint();
         p.setColor(Color.BLUE);
-        canvas.drawRect(getMeasuringHelper().getLayout(), p);
+        Rect rel = getMeasuringHelper().getLayout();
+        rel.offsetTo(0, 0);
+        canvas.drawRect(rel, p);
     }
 
     public boolean requestDisallowInterceptTouchEvent() {

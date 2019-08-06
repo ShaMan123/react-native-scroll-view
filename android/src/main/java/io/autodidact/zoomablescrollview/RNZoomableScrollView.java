@@ -11,8 +11,9 @@ import android.widget.ScrollView;
 
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.views.scroll.ReactScrollView;
+import com.facebook.react.views.view.ReactViewGroup;
 
-public class RNZoomableScrollView extends ViewGroup {
+public class RNZoomableScrollView extends ReactViewGroup {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private GestureEventManager mGestureManager;
     private ThemedReactContext mContext;
@@ -21,6 +22,7 @@ public class RNZoomableScrollView extends ViewGroup {
         super(context);
         mContext = context;
         mGestureManager = new GestureEventManager(this);
+        setRemoveClippedSubviews(false);
     }
 
     public GestureEventManager getGestureManager() {
@@ -39,15 +41,13 @@ public class RNZoomableScrollView extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        //super.onLayout(changed, l, t, r, b);
-        mGestureManager.getMeasuringHelper().onLayout(changed, l, t, r, b);
-        Log.d(TAG, "onLayout: " + mGestureManager.getMeasuringHelper().getLayout());
-        Log.d(TAG, "onLayout: " + mGestureManager.getMeasuringHelper().getClipLayout());
+        super.onLayout(changed, l, t, r, b);
+        mGestureManager.onLayout(changed, l, t, r, b);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        //return super.onInterceptTouchEvent(ev);
+        super.onInterceptTouchEvent(ev);
         return true;
     }
 

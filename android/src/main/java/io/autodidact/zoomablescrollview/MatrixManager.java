@@ -127,27 +127,9 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         */
     }
 
-
     public Matrix getAbsoluteMatrix(){
-        /*
-        RectF mLayout = getAbsoluteLayoutRect();
         Matrix m = new Matrix();
-        m.preTranslate(mLayout.left, mLayout.top);
         m.postConcat(this);
-        return m;
-        */
-        RectF mLayout = getAbsoluteLayoutRect();
-        Matrix m = new Matrix();
-        //m.preTranslate(mLayout.left, mLayout.top);
-
-        Matrix m1 = new Matrix();
-        RectF mapped = new RectF(mLayout);
-        mapped.offsetTo(0, 0);
-        mView.getMatrix().mapRect(mapped);
-        Log.d(TAG, "getAbsoluteMatrix: " + mapped);
-        m1.setRectToRect(mLayout, mapped, ScaleToFit.START);
-        //m.postConcat(getRawViewMatrix());
-        m.postConcat(m1);
         return m;
     }
 

@@ -73,13 +73,14 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flex: 1, top: this.state.a, /*flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', */transform: [{ scaleX: 2 }, { scaleY: 2 }, {rotateX:'20deg'}] }}
+                style={{ backgroundColor: 'red', flex: 1,/* top: this.state.a, /*flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',transform: [{ scaleX:1 }, { scaleY: 1 }, {rotateX:'40deg'}] */ }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={50}
                 zoomScale={index + 1}
                 key={`customview${index}`}
                 ref={this.scrollRefs[index]}
                 onLayout={e => console.log('!!!!', e.nativeEvent)}
+                overflow="hidden"
             //centerContent
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
@@ -124,13 +125,6 @@ export default class App extends Component<Props> {
     render() {
         return (
             <View style={{ flex: 1 }}>
-                <GHViewPager
-                    style={{ flex: 1 }}
-                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
-                >
-                    <View>{this.renderPage(0)}</View>
-                    <View>{this.renderPage(1)}</View>
-                </GHViewPager>
                 <Button
                     onPress={this.onPress}
                     title='scrollTo'
@@ -139,11 +133,27 @@ export default class App extends Component<Props> {
                     onPress={this.onPress1}
                     title='scrollTo'
                 />
+                <GHViewPager
+                    style={{ flex: 1 }}
+                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
+                >
+                    <View>{this.renderPage(0)}</View>
+                    <View>{this.renderPage(1)}</View>
+                </GHViewPager>
+                <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
             </View>
         );
     }
 
-
+    render() {
+        return (
+            <View style={{ flex: 1 }}>
+                <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />
+                <View style={{flex:1}}>{this.renderPage(0)}</View>
+                <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />
+            </View>
+        );
+    }
 
     render__() {
         return (
