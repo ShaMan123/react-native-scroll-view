@@ -2,6 +2,7 @@ package io.autodidact.zoomablescrollview;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -120,6 +121,9 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
     }
 
     protected void onDraw(Canvas canvas) {
+        canvas.setMatrix(new Matrix());
+        canvas.clipRect(getMeasuringHelper().getClippingRect());
+
         canvas.setMatrix(mMatrix.getAbsoluteMatrix());
 
         Paint p = new Paint();
