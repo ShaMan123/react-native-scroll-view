@@ -13,7 +13,7 @@ public class VelocityHelper {
     public void onTouchEvent(MotionEvent event) {
         prevVelocity.set(mVelocity);
         int action = event.getActionMasked();
-        if(action == MotionEvent.ACTION_DOWN){
+        if(action == MotionEvent.ACTION_DOWN || mVelocityTracker == null){
             mVelocityTracker = VelocityTracker.obtain();
         }
         mVelocityTracker.addMovement(event);
@@ -21,6 +21,7 @@ public class VelocityHelper {
         mVelocity.set(mVelocityTracker.getXVelocity(), mVelocityTracker.getYVelocity());
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
             mVelocityTracker.recycle();
+            mVelocityTracker = null;
             mVelocity.set(0, 0);
             prevVelocity.set(mVelocity);
         }

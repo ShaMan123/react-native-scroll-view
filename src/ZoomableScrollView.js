@@ -218,10 +218,18 @@ export default class ScrollView extends Component {
             <NativeView
                 {...this.props}
                 ref={this._setRef}
-                onScroll={(e)=>console.log(e.nativeEvent)}
-                onScrollBeginDrag={(e)=>console.log('begin',e.nativeEvent)}
-                onScrollEndDrag={(e)=>console.log('end',e.nativeEvent)}
-            />
+                onScroll={(e) => console.log(e.nativeEvent)}
+                onScrollBeginDrag={(e) => console.log('begin', e.nativeEvent)}
+                onScrollEndDrag={(e) => console.log('end', e.nativeEvent)}
+            >
+                <View
+                    collapsable={false}
+                    style={{width:360, height:1200}}
+                /*style={{ flexWrap: 'wrap', flexDirection: 'row' }}*/
+                >
+                    {this.props.children}
+                </View>
+            </NativeView>
         );
     }
 }

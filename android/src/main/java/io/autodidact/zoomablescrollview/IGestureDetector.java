@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 
 import androidx.annotation.IntDef;
 
+import com.facebook.react.uimanager.ThemedReactContext;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

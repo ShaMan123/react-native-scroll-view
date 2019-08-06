@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -24,20 +25,16 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
     private VelocityHelper mVelocityHelper;
     private boolean mIsHorizontal = false;
 
-    GestureEventManager(ThemedReactContext context, ViewGroup view){
-        mMatrix = new MatrixManager(context);
+    GestureEventManager(RNZoomableScrollView view){
+        mMatrix = new MatrixManager(view);
         mView = view;
-        scaleGestureHelper = new ScaleGestureHelper(context, mMatrix);
+        scaleGestureHelper = new ScaleGestureHelper(view.getReactContext(), mMatrix);
         translateGestureHelper = new TranslateGestureHelper(mMatrix);
         mVelocityHelper = new VelocityHelper();
     }
 
     public void setHorizontal() {
         mIsHorizontal = true;
-    }
-
-    public MeasureTransformedView getMeasuringHelper() {
-        return mMatrix.getMeasuringHelper();
     }
 
     /*
@@ -63,22 +60,38 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
         return mMatrix;
     }
 
+    public MeasureTransformedView getMeasuringHelper(){
+        return mMatrix.getMeasuringHelper();
+    }
+
     @Override
     public void scrollTo(float x, float y, boolean animated) {
-        mMatrix.scrollTo(new PointF(x, y));
-        mView.postInvalidateOnAnimation();
+        mView.scrollTo((int) x, (int) y);
+        //mMatrix.scrollTo(new PointF(x, y));
+        //mView.postInvalidateOnAnimation();
     }
 
     @Override
     public void scrollBy(float x, float y, boolean animated) {
+        mView.scrollBy((int) x, (int) y);
+        /*
         mMatrix.scrollBy(new PointF(x, y));
         mView.postInvalidateOnAnimation();
+        */
     }
 
     @Override
     public void scrollToEnd(boolean animated) {
+        RectF clippingRect = mMatrix.getClippingRect();
+        RectF layoutRect = mMatrix.getAbsoluteLayoutRect();
+
+        Log.d(TAG, "scrollToEnd: " + layoutRect + "  " + clippingRect);
+        mView.scrollTo((int) Math.max(layoutRect.width() - clippingRect.width(), 0), (int) Math.max(layoutRect.height() - clippingRect.height(), 0));
+
+        /*
         mMatrix.scrollToEnd(mIsHorizontal);
         mView.postInvalidateOnAnimation();
+        */
     }
 
     @Override
@@ -100,18 +113,17 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
         //mView.postInvalidateOnAnimation();
     }
 
-    public void setLayoutRect(int l, int t, int r, int b){
-        getMeasuringHelper().setLayout(l, t, r, b);
-    }
-
     protected void onDraw(Canvas canvas) {
-        canvas.setMatrix(new Matrix());
-        RectF dst1 = getMeasuringHelper().getTransformedRect();
+        RectF dst1 = mMatrix.getTransformedRect();
+
+        Matrix m = new Matrix();
+        m.setRectToRect(new RectF(getMeasuringHelper().getLayout()), dst1, Matrix.ScaleToFit.START);
+
+        canvas.setMatrix(m);
+
         Paint p = new Paint();
         p.setColor(Color.BLUE);
-        canvas.drawRect(dst1, p);
-
-        canvas.setMatrix(getMeasuringHelper().getAbsoluteMatrix());
+        canvas.drawRect(getMeasuringHelper().getLayout(), p);
     }
 
     public boolean requestDisallowInterceptTouchEvent() {

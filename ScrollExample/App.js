@@ -73,13 +73,14 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flexWrap: 'wrap', flexDirection: 'row', top: this.state.a, alignItems: 'center', justifyContent: 'center' }}
+                style={{ backgroundColor: 'red', flex: 1, top: this.state.a, /*flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', */transform: [{ scaleX: 2 }, { scaleY: 2 }, {rotateX:'20deg'}] }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={50}
                 zoomScale={index + 1}
                 key={`customview${index}`}
                 ref={this.scrollRefs[index]}
-                //centerContent
+                onLayout={e => console.log('!!!!', e.nativeEvent)}
+            //centerContent
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
                 <Image
@@ -92,14 +93,14 @@ export default class App extends Component<Props> {
                 />
                 <Image
                     style={{ width: 300, height: 300 }}
-                    source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
+                    source={{ uri: 'https://www.worldatlas.com/r/w728-h425-c728x425/upload/0e/3c/e9/saharah-desert-sand-dunes.jpg', width: 300, height: 300 }}
                 />
                 <Image
                     style={{ width: 300, height: 300 }}
                     source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
                 />
-                </GHCV>
-                
+            </GHCV>
+
         );
     }
 
@@ -109,14 +110,20 @@ export default class App extends Component<Props> {
 
     onPress = () => {
         const { width, height } = Dimensions.get('window');
-        //this.getCurrentScrollRef().scrollToEnd();
-        this.getCurrentScrollRef().scrollTo({x: -200, y: -500});
+        this.getCurrentScrollRef().scrollToEnd();
+        //this.getCurrentScrollRef().scrollTo({x: 200, y: 1100});
+        //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
+    }
+
+    onPress1 = () => {
+        const { width, height } = Dimensions.get('window');
+        this.getCurrentScrollRef().scrollBy({x: 0, y: -100});
         //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
     }
 
     render() {
         return (
-            <>
+            <View style={{ flex: 1 }}>
                 <GHViewPager
                     style={{ flex: 1 }}
                     onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
@@ -128,9 +135,15 @@ export default class App extends Component<Props> {
                     onPress={this.onPress}
                     title='scrollTo'
                 />
-            </>
+                <Button
+                    onPress={this.onPress1}
+                    title='scrollTo'
+                />
+            </View>
         );
     }
+
+
 
     render__() {
         return (

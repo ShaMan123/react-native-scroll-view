@@ -1,19 +1,17 @@
 package io.autodidact.zoomablescrollview;
 
-import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
 
-import androidx.core.view.ViewCompat;
-
-import com.facebook.react.uimanager.ThemedReactContext;
-
-public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper {
+public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper, IGestureDetector.MesaureTransformedView {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
+
+    protected RNZoomableScrollView mView;
 
     private float mScale = 1f;
     private float minScale = 0.75f;
@@ -23,21 +21,23 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     private boolean mDidInitScale = false;
 
     private RectB canOffset = new RectB();
-    private MeasureTransformedView measureTransformedView;
+    private MeasureTransformedView mMeasurementProvider;
     private boolean mCenterContent = false;
 
     /**
      * Common
      */
 
-    MatrixManager(ThemedReactContext context){
+    MatrixManager(RNZoomableScrollView view){
         super();
-        this.measureTransformedView = new MeasureTransformedView(context, this);
+        mMeasurementProvider = new MeasureTransformedView(view);
+        mView = view;
     }
 
     private MatrixManager(MatrixManager ancestor){
         super();
-        this.measureTransformedView = new MeasureTransformedView(ancestor.measureTransformedView, this);
+        mMeasurementProvider = ancestor.mMeasurementProvider;
+        mView = ancestor.mView;
         set(ancestor);
     }
 
@@ -46,11 +46,11 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     }
 
     public MeasureTransformedView getMeasuringHelper() {
-        return measureTransformedView;
+        return mMeasurementProvider;
     }
 
     public void zoomToRect(float x, float y, float width, float height, boolean animated){
-        RectF src = getMeasuringHelper().getAbsoluteLayoutRect();
+        RectF src = getAbsoluteLayoutRect();
         RectF dst = new RectF(x, y, x + width, y + height);
         reset();
         float scale = clampScale(Math.min(src.width() / width, src.height() / height));
@@ -68,7 +68,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     }
 
     public void zoomToRect(RectF dst, boolean animated) {
-        RectF src = getMeasuringHelper().getClippingRect(true);
+        RectF src = getClippingRect();
+        src.offsetTo(0, 0);
         Matrix matrix = new Matrix();
         RectF post = new RectF();
         RectF pre = new RectF();
@@ -91,6 +92,82 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     public static float clamp(float min, float value, float max){
         return Math.max(min, Math.min(value, max));
     }
+
+    /**
+     * Measuring Manager
+     *
+     */
+
+
+    public boolean isContained(){
+        return getTransformedRect().contains(getClippingRect());
+    }
+
+    public Matrix getRawViewMatrix(){
+        Matrix out = new Matrix();
+        //mView.setPivotX(0);
+        //mView.setPivotY(0);
+        out.preTranslate(-mView.getPivotX(), -mView.getPivotY());
+        out.postConcat(mView.getMatrix());
+        return out;
+/*
+        RectF mLayout = getAbsoluteLayoutRect();
+        Matrix m = new Matrix();
+        //m.preTranslate(mLayout.left, mLayout.top);
+
+        Matrix m1 = new Matrix();
+        RectF mapped = new RectF(mLayout);
+        mapped.offsetTo(0, 0);
+        mView.getMatrix().mapRect(mapped);
+        Log.d(TAG, "getAbsoluteMatrix: " + mapped);
+        m1.setRectToRect(mLayout, mapped, ScaleToFit.START);
+        //m.postConcat(getRawViewMatrix());
+        m.postConcat(m1);
+        return m;
+        */
+    }
+
+
+    public Matrix getAbsoluteMatrix(){
+        /*
+        RectF mLayout = getAbsoluteLayoutRect();
+        Matrix m = new Matrix();
+        m.preTranslate(mLayout.left, mLayout.top);
+        m.postConcat(this);
+        return m;
+        */
+        RectF mLayout = getAbsoluteLayoutRect();
+        Matrix m = new Matrix();
+        //m.preTranslate(mLayout.left, mLayout.top);
+
+        Matrix m1 = new Matrix();
+        RectF mapped = new RectF(mLayout);
+        mapped.offsetTo(0, 0);
+        mView.getMatrix().mapRect(mapped);
+        Log.d(TAG, "getAbsoluteMatrix: " + mapped);
+        m1.setRectToRect(mLayout, mapped, ScaleToFit.START);
+        //m.postConcat(getRawViewMatrix());
+        m.postConcat(m1);
+        return m;
+    }
+
+    public RectF getAbsoluteLayoutRect(){
+        return mMeasurementProvider.getAbsoluteLayoutRect();
+    }
+
+    @Override
+    public RectF getClippingRect() {
+        return mMeasurementProvider.getClippingRect();
+    }
+
+    public RectF getTransformedRect(){
+        RectF src = new RectF(getAbsoluteLayoutRect());
+        RectF dst = new RectF();
+        src.offsetTo(0, 0);
+        getAbsoluteMatrix().mapRect(dst, src);
+        return dst;
+    }
+
 
     /**
      * ScaleManager
@@ -158,13 +235,13 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     public PointF getFocalPoint(float x, float y){
         PointF out = new PointF(x, y);
-        if(!measureTransformedView.contains()) {
-            RectF clippingRect = measureTransformedView.getClippingRect();
+        if(!isContained()) {
+            RectF clippingRect = getClippingRect();
             if(mCenterContent){
                 out.set(clippingRect.centerX(), clippingRect.centerY());
             }
             else {
-                out.set(measureTransformedView.getLayoutDirection() == LayoutDirection.RTL ? clippingRect.right : clippingRect.left, clippingRect.top);
+                out.set(mMeasurementProvider.getLayoutDirection() == LayoutDirection.RTL ? clippingRect.right : clippingRect.left, clippingRect.top);
             }
         }
         return out;
@@ -192,8 +269,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     @Override
     public PointF getTopLeftMaxDisplacement() {
-        RectF o = measureTransformedView.getTransformedRect();
-        RectF clippingRect = measureTransformedView.getClippingRect();
+        RectF o = getTransformedRect();
+        RectF clippingRect = getClippingRect();
         //return new PointF(Math.min(o.left - clippingRect.left, 0), Math.min(o.top - clippingRect.top, 0));
         return new PointF(o.left - clippingRect.left, o.top - clippingRect.top);
     }
@@ -207,8 +284,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     @Override
     public PointF getBottomRightMaxDisplacement() {
-        RectF o = measureTransformedView.getTransformedRect();
-        RectF clippingRect = measureTransformedView.getClippingRect();
+        RectF o = getTransformedRect();
+        RectF clippingRect = getClippingRect();
         //return new PointF(Math.max(o.right - clippingRect.right, 0), Math.max(o.bottom - clippingRect.bottom, 0));
         return new PointF(o.right - clippingRect.right, o.bottom - clippingRect.bottom);
     }
@@ -246,8 +323,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         RectB mCanOffset = new RectB(false);
         PointF out =  new PointF();
         out.set(offset);
-        RectF clippingRect = measureTransformedView.getClippingRect();
-        RectF transformed = measureTransformedView.getTransformedRect();
+        RectF clippingRect = getClippingRect();
+        RectF transformed = getTransformedRect();
         transformed.offset(offset.x, offset.y);
 
         boolean wIsContained = transformed.width() <= clippingRect.width();
@@ -272,8 +349,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     public boolean isOverScrolling() {
         RectB mIsOverscrolling = new RectB(false);
-        RectF clippingRect = measureTransformedView.getClippingRect();
-        RectF transformed = measureTransformedView.getTransformedRect();
+        RectF clippingRect = getClippingRect();
+        RectF transformed = getTransformedRect();
 
         boolean wIsContained = transformed.width() <= clippingRect.width();
         boolean hIsContained = transformed.height() <= clippingRect.height();
@@ -287,7 +364,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     }
 
     public boolean scrollTo(PointF scrollTo) {
-        RectF transformedRect = measureTransformedView.getTransformedRect();
+        RectF transformedRect = getTransformedRect();
         MatrixManager testMatrix = test();
         RectF out = new RectF();
 
@@ -313,8 +390,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     }
 
     public void scrollToEnd(boolean horizontal) {
-        RectF layoutRect = measureTransformedView.getAbsoluteLayoutRect();
-        RectF clippingRect = measureTransformedView.getClippingRect();
+        RectF layoutRect = getAbsoluteLayoutRect();
+        RectF clippingRect = getClippingRect();
         layoutRect.inset(clippingRect.width() * 0.5f, clippingRect.height() * 0.5f);
         layoutRect.offsetTo(0, 0);
         Log.d(TAG, "scrollToEnd: " + layoutRect);
@@ -327,7 +404,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         }
         else {
             p.y = 0;
-            if(measureTransformedView.getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL){
+            if(mMeasurementProvider.getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL){
                 p.negate();
             }
         }
