@@ -13,7 +13,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.views.scroll.ReactScrollView;
 import com.facebook.react.views.view.ReactViewGroup;
 
-public class RNZoomableScrollView extends ReactViewGroup {
+public class RNZoomableScrollView extends ViewGroup {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private GestureEventManager mGestureManager;
     private ThemedReactContext mContext;
@@ -22,7 +22,8 @@ public class RNZoomableScrollView extends ReactViewGroup {
         super(context);
         mContext = context;
         mGestureManager = new GestureEventManager(this);
-        setRemoveClippedSubviews(false);
+        setClipChildren(false);
+        //setRemoveClippedSubviews(false);
     }
 
     public GestureEventManager getGestureManager() {
@@ -41,7 +42,7 @@ public class RNZoomableScrollView extends ReactViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
+        //super.onLayout(changed, l, t, r, b);
         mGestureManager.onLayout(changed, l, t, r, b);
     }
 
