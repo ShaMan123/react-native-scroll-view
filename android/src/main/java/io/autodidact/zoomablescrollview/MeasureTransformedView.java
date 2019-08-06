@@ -1,17 +1,12 @@
 package io.autodidact.zoomablescrollview;
 
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 
-import com.facebook.react.uimanager.ThemedReactContext;
-
-import static io.autodidact.zoomablescrollview.RNZoomableScrollView.TAG;
-
 public class MeasureTransformedView {
-    private Rect mLayout = new Rect();
-    private Rect mClipLayout = new Rect();
+    private Rect mContentRect = new Rect();
+    private Rect mClippingRect = new Rect();
     private Rect mViewPort;
     private boolean mInitialized = false;
     private int mLayoutDirection;
@@ -24,33 +19,35 @@ public class MeasureTransformedView {
         mView = view;
     }
 
+    public void processLayout(Rect clippingRect, Rect LayoutRect){
+        mClippingRect.set(clippingRect);
+        mContentRect.set(LayoutRect);
+        if(!mInitialized) mInitialized = true;
+    }
+
     public Rect getViewPort(){
         return mViewPort;
     }
 
-    public Rect getLayout(){
-        return mLayout;
+    public Rect getContentRect(){
+        return mContentRect;
     }
 
-    public Rect getClipLayout(){
-        return mClipLayout;
+    public RectF getAbsoluteContentRect(){
+        validateState();
+        return new RectF(mContentRect);
+        //return fromRelativeToViewPortToAbsolute(new RectF(mContentRect));
+    }
+
+    public RectF getClippingRect(){
+        //Log.d("ZoomableScroll", "getClippingRect: " + mClippingRect);
+        return new RectF(mClippingRect);
+        //return fromRelativeToViewPortToAbsolute(new RectF(mClippingRect));
+
     }
 
     public int getLayoutDirection(){
         return mLayoutDirection;
-    }
-
-    public void onLayout(boolean changed, int l, int t, int r, int b) {
-        mClipLayout.set(l, t, r, b);
-
-        Rect out = new Rect();
-        mView.getChildAt(0).getDrawingRect(out);
-        out.offset(l, t);
-        mLayout.set(out);
-
-        mInitialized = true;
-
-        Log.d(TAG, "onLayout: clip " + mClipLayout + ", layout " + mLayout);
     }
 
     protected boolean isInitialized(){
@@ -61,11 +58,8 @@ public class MeasureTransformedView {
         if(!mInitialized) throw new IllegalStateException("MeasureTransformedView has not been initialized yet");
     }
 
-    public RectF getAbsoluteLayoutRect(){
-        validateState();
-        return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
-    }
 
+/*
     public RectF getClippingRect() {
         validateState();
         RectF mRect = fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
@@ -78,12 +72,12 @@ public class MeasureTransformedView {
         );
         return out;
     }
-
+*/
     public RectF fromRelativeToAbsolute(RectF src){
         validateState();
         RectF dst = new RectF(src);
         dst.offset(mViewPort.left, mViewPort.top);
-        dst.offset(mLayout.left, mLayout.top);
+        dst.offset(mContentRect.left, mContentRect.top);
         return dst;
     }
 

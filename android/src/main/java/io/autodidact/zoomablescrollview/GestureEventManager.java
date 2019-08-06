@@ -2,12 +2,15 @@ package io.autodidact.zoomablescrollview;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+
+import com.facebook.react.uimanager.LayoutShadowNode;
 
 public class GestureEventManager implements IGestureDetector.ScrollResponder {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -108,23 +111,28 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
         //mView.postInvalidateOnAnimation();
     }
 
-    public void onLayout(boolean changed, int l, int t, int r, int b) {
-        RectF clip;
-        if(getMeasuringHelper().isInitialized()){
-            clip = getMeasuringHelper().getClippingRect();
-            mMatrix.preTranslate(-clip.left, -clip.top);
-        }
-        getMeasuringHelper().onLayout(changed, l, t, r, b);
-        clip = getMeasuringHelper().getClippingRect();
-        mMatrix.preTranslate(clip.left, clip.top);
+    public void processLayout(Rect clippingRect, Rect contentRect) {
+        getMeasuringHelper().processLayout(clippingRect, contentRect);
+        mMatrix.processLayout(clippingRect, contentRect);
     }
 
     protected void onDraw(Canvas canvas) {
-        canvas.setMatrix(mMatrix.getAbsoluteMatrix());
+        // override inherited transformations
+        // passing left, top etc
+        //canvas.setMatrix(new Matrix());
+
+        canvas.setMatrix(mMatrix);
+        RectF dst = getMeasuringHelper().fromRelativeToAbsolute(getMeasuringHelper().getClippingRect());
+        Log.d(TAG, "onDraw: " + dst);
+        canvas.translate(-dst.left, -dst.top);
+
+        //  clip
+        RectF clippingRect = getMeasuringHelper().getClippingRect();
+        //canvas.clipRect(clippingRect);
 
         Paint p = new Paint();
         p.setColor(Color.BLUE);
-        Rect rel = getMeasuringHelper().getLayout();
+        Rect rel = getMeasuringHelper().getContentRect();
         rel.offsetTo(0, 0);
         canvas.drawRect(rel, p);
     }

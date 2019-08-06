@@ -4,10 +4,12 @@ import android.util.Log;
 
 import androidx.annotation.IntDef;
 
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
+import com.facebook.react.uimanager.LayoutShadowNode;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
@@ -36,6 +38,12 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
     @Override
     protected RNZoomableScrollView createViewInstance(@Nonnull ThemedReactContext reactContext) {
         return new RNZoomableScrollView(reactContext);
+    }
+
+    @Override
+    public void onDropViewInstance(@Nonnull RNZoomableScrollView view) {
+        view.destroy();
+        super.onDropViewInstance(view);
     }
 
     @ReactProp(name = "zoomScale", defaultFloat = 1f)

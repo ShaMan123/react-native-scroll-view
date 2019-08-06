@@ -7,11 +7,14 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated, Button, Dimensions } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated, Button, Dimensions, I18nManager } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
 //import { State, PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
+
+I18nManager.allowRTL(false);
+I18nManager.forceRTL(false)
 
 const instructions = Platform.select({
     ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -80,7 +83,7 @@ export default class App extends Component<Props> {
                 key={`customview${index}`}
                 ref={this.scrollRefs[index]}
                 onLayout={e => console.log('!!!!', e.nativeEvent)}
-                overflow="hidden"
+                
             //centerContent
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
@@ -125,6 +128,15 @@ export default class App extends Component<Props> {
     render() {
         return (
             <View style={{ flex: 1 }}>
+                <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
+                <GHViewPager
+                    style={{ flex: 1, top: 150 }}
+                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
+                >
+                    <View>{this.renderPage(0)}</View>
+                    <View>{this.renderPage(1)}</View>
+                </GHViewPager>
+                <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
                 <Button
                     onPress={this.onPress}
                     title='scrollTo'
@@ -133,19 +145,11 @@ export default class App extends Component<Props> {
                     onPress={this.onPress1}
                     title='scrollTo'
                 />
-                <GHViewPager
-                    style={{ flex: 1 }}
-                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
-                >
-                    <View>{this.renderPage(0)}</View>
-                    <View>{this.renderPage(1)}</View>
-                </GHViewPager>
-                <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
             </View>
         );
     }
 
-    render() {
+    render1() {
         return (
             <View style={{ flex: 1 }}>
                 <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />

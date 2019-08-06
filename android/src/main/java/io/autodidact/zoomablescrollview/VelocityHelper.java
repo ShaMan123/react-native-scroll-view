@@ -31,11 +31,11 @@ public class VelocityHelper {
         return mVelocity;
     }
 
-    public static Point sign(Point p) {
+    public static PointF sign(Point p) {
         return sign(new PointF(p));
     }
 
-    public static Point sign(PointF p) {
-        return new Point((int)(p.x / Math.abs(p.x)), (int)(p.y / Math.abs(p.y)));
+    public static PointF sign(PointF p) {
+        return new PointF(Math.signum(p.x), Math.signum(p.y));
     }
 }

@@ -12,6 +12,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
 
     protected RNZoomableScrollView mView;
+    private Matrix mViewMatrix = new Matrix();
 
     private float mScale = 1f;
     private float minScale = 0.75f;
@@ -47,6 +48,23 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     public MeasureTransformedView getMeasuringHelper() {
         return mMeasurementProvider;
+    }
+
+    public void processLayout(Rect clippingRect, Rect contentRect) {
+        /*
+        RectF clip;
+        if(getMeasuringHelper().isInitialized()){
+            clip = getMeasuringHelper().getClippingRect();
+            preTranslate(-clip.left, -clip.top);
+        }
+        preTranslate(clippingRect.left, clippingRect.top);
+        */
+        Matrix src = new Matrix();
+        mViewMatrix.invert(src);
+        postConcat(src);
+        mViewMatrix.set(mView.getMatrix());
+        postConcat(mViewMatrix);
+
     }
 
     public void zoomToRect(float x, float y, float width, float height, boolean animated){
@@ -111,7 +129,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         out.postConcat(mView.getMatrix());
         return out;
 /*
-        RectF mLayout = getAbsoluteLayoutRect();
+        RectF mLayout = getAbsoluteContentRect();
         Matrix m = new Matrix();
         //m.preTranslate(mLayout.left, mLayout.top);
 
@@ -134,7 +152,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     }
 
     public RectF getAbsoluteLayoutRect(){
-        return mMeasurementProvider.getAbsoluteLayoutRect();
+        return mMeasurementProvider.getAbsoluteContentRect();
     }
 
     @Override
@@ -343,6 +361,23 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         if(transformed.bottom < clippingRect.bottom && !hIsContained) mIsOverscrolling.bottom = true;
 
         return mIsOverscrolling.some();
+    }
+
+    public void fling(){
+        /*
+        mScroller.fling(
+                getScrollX(), // startX
+                getScrollY(), // startY
+                0, // velocityX
+                correctedVelocityY, // velocityY
+                0, // minX
+                0, // maxX
+                0, // minY
+                Integer.MAX_VALUE, // maxY
+                0, // overX
+                scrollWindowHeight / 2 // overY
+        );
+        */
     }
 
     public boolean scrollTo(PointF scrollTo) {
