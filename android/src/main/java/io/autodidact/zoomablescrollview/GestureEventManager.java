@@ -16,8 +16,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 public class GestureEventManager implements IGestureDetector.ScrollResponder {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private IGestureDetector combinedGestureDetector;
-    private Matrix mMatrix = new Matrix();
-    MeasureTransformedView measureTransformedView;
+    private MatrixManager mMatrix;
     private ViewGroup mView;
     private ScaleGestureHelper scaleGestureHelper;
     private TranslateGestureHelper translateGestureHelper;
@@ -26,15 +25,19 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
     private boolean mIsHorizontal = false;
 
     GestureEventManager(ThemedReactContext context, ViewGroup view){
-        measureTransformedView = new MeasureTransformedView(context, mMatrix);
+        mMatrix = new MatrixManager(context);
         mView = view;
-        scaleGestureHelper = new ScaleGestureHelper(context, mMatrix, measureTransformedView);
-        translateGestureHelper = new TranslateGestureHelper(mMatrix, measureTransformedView);
+        scaleGestureHelper = new ScaleGestureHelper(context, mMatrix);
+        translateGestureHelper = new TranslateGestureHelper(mMatrix);
         mVelocityHelper = new VelocityHelper();
     }
 
     public void setHorizontal() {
         mIsHorizontal = true;
+    }
+
+    public MeasureTransformedView getMeasuringHelper() {
+        return mMatrix.getMeasuringHelper();
     }
 
     /*
@@ -56,45 +59,39 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
         return translateGestureHelper;
     }
 
-    public Matrix getMatrix() {
+    public MatrixManager getMatrix() {
         return mMatrix;
     }
 
     @Override
     public void scrollTo(float x, float y, boolean animated) {
-        translateGestureHelper.scrollTo(new PointF(x, y));
+        mMatrix.scrollTo(new PointF(x, y));
         mView.postInvalidateOnAnimation();
     }
 
     @Override
     public void scrollBy(float x, float y, boolean animated) {
-        translateGestureHelper.scrollBy(new PointF(x, y));
+        mMatrix.scrollBy(new PointF(x, y));
         mView.postInvalidateOnAnimation();
     }
 
     @Override
     public void scrollToEnd(boolean animated) {
-        translateGestureHelper.scrollToEnd(mIsHorizontal);
+        mMatrix.scrollToEnd(mIsHorizontal);
         mView.postInvalidateOnAnimation();
     }
 
     @Override
     public void zoomToRect(float x, float y, float width, float height, boolean animated) {
+        //mMatrix.zoomToRect(x, y, width, height, animated);
+        //mView.postInvalidateOnAnimation();
         zoomToRect(new RectF(x, y, x + width, y + height), animated);
     }
 
     @Override
     public void zoomToRect(RectF dst, boolean animated) {
-        RectF src = measureTransformedView.getAbsoluteLayoutRect();
-        mMatrix.setRectToRect(dst, src, Matrix.ScaleToFit.CENTER);
-        mMatrix.postTranslate(-src.left, -src.top);
-        forceUpdateFromMatrix();
+        mMatrix.zoomToRect(dst, animated);
         mView.postInvalidateOnAnimation();
-    }
-
-    protected void forceUpdateFromMatrix() {
-        scaleGestureHelper.forceUpdateFromMatrix();
-        translateGestureHelper.forceUpdateFromMatrix();
     }
 
     @Override
@@ -104,21 +101,21 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
     }
 
     public void setLayoutRect(int l, int t, int r, int b){
-        measureTransformedView.setLayout(l, t, r, b);
+        getMeasuringHelper().setLayout(l, t, r, b);
     }
 
     protected void onDraw(Canvas canvas) {
         canvas.setMatrix(new Matrix());
-        RectF dst1 = measureTransformedView.getTransformedRect();
+        RectF dst1 = getMeasuringHelper().getTransformedRect();
         Paint p = new Paint();
         p.setColor(Color.BLUE);
         canvas.drawRect(dst1, p);
 
-        canvas.setMatrix(measureTransformedView.getAbsoluteMatrix());
+        canvas.setMatrix(getMeasuringHelper().getAbsoluteMatrix());
     }
 
     public boolean requestDisallowInterceptTouchEvent() {
-        return translateGestureHelper.canScroll(mVelocityHelper.getVelocity());
+        return mMatrix.canScroll(mVelocityHelper.getVelocity());
     }
 
     public boolean onTouchEvent(MotionEvent event) {

@@ -40,17 +40,22 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
 
     @ReactProp(name = "zoomScale", defaultFloat = 1f)
     public void setZoomScale(RNZoomableScrollView view, float value){
-        //view.getGestureManager().getScaleGestureHelper().setInitialScale(value);
+        //view.getGestureManager().getMatrix().setInitialScale(value);
     }
 
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)
     public void setMinimumZoomScale(RNZoomableScrollView view, float value){
-        view.getGestureManager().getScaleGestureHelper().setMinimumScale(value);
+        view.getGestureManager().getMatrix().setMinimumScale(value);
     }
 
     @ReactProp(name = "maximumZoomScale", defaultFloat = 3.0f)
     public void setMaximumZoomScale(RNZoomableScrollView view, @Nullable float value){
-        view.getGestureManager().getScaleGestureHelper().setMaximumScale(value);
+        view.getGestureManager().getMatrix().setMaximumScale(value);
+    }
+
+    @ReactProp(name = "centerContent", defaultBoolean = false)
+    public void setCenterContent(RNZoomableScrollView view, boolean value){
+        view.getGestureManager().getMatrix().setCenterContent(value);
     }
 
     @ReactProp(name = "dispatchScrollEvents", defaultBoolean = true)

@@ -141,7 +141,7 @@ export default class ScrollView extends Component {
         minimumZoomScale: 0.75,
         maximumZoomScale: 3,
         pinchGestureEnabled: true,
-        centerContent: true,
+        centerContent: false,
         contentOffset: null,
         contentInset: { top: 0, bottom: 0, left: 0, right: 0, start: 0, end: 0 },
         decelerationRate: decelerationRate.normal,
@@ -202,7 +202,7 @@ export default class ScrollView extends Component {
     }
 
     scrollBy(options) {
-        //this._scrollResponder.scrollResponderScrollBy(options);
+        this._scrollResponder.scrollResponderScrollBy(options);
     }
 
     scrollToEnd(options) {

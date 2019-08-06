@@ -11,19 +11,15 @@ import android.view.ScaleGestureDetector;
 
 import com.facebook.react.uimanager.ThemedReactContext;
 
-public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnDoubleTapListener {
+public class ScaleGestureHelper implements ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnDoubleTapListener {
     private static final String TAG = ScaleGestureHelper.class.getSimpleName();
-    private float mScale = 1f;
-    private float minScale = 0.75f;
-    private float maxScale = 3f;
     private ScaleGestureDetector mScaleDetector;
     private GestureDetector mGestureDetector;
-    private Matrix matrix;
+    private MatrixManager matrix;
     private boolean mAppliedChange;
-    MeasureTransformedView measureTransformedView;
     private boolean mDidInitScale = false;
 
-    ScaleGestureHelper(ThemedReactContext context, Matrix matrix, MeasureTransformedView measureTransformedView) {
+    ScaleGestureHelper(ThemedReactContext context, MatrixManager matrix) {
         mScaleDetector = new ScaleGestureDetector(context, this){
             @Override
             public boolean onTouchEvent(MotionEvent event) {
@@ -34,78 +30,6 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
         mGestureDetector.setOnDoubleTapListener(this);
 
         this.matrix = matrix;
-        this.measureTransformedView = measureTransformedView;
-    }
-
-/*
-    public void setInitialScale(float scale){
-        if(mDidInitScale) return;
-        mDidInitScale = true;
-        mScale = clampScale(scale);
-        matrix.postScale(mScale, mScale, 0, 0);
-    }
-*/
-    public float getScale() {
-        return mScale;
-    }
-
-    @Override
-    public void forceUpdateFromMatrix() {
-        float[] values = new float[9];
-        matrix.getValues(values);
-        mScale = clampScale(values[Matrix.MSCALE_X]);
-    }
-
-    @Override
-    public float getMinimumScale() {
-        return minScale;
-    }
-
-    public void setMinimumScale(float minimumScale) {
-        minScale = minimumScale;
-    }
-
-    @Override
-    public float getMaximumScale() {
-        return maxScale;
-    }
-
-    public void setMaximumScale(float maximumScale) {
-        maxScale = maximumScale;
-    }
-
-    public float clamp(float min, float value, float max){
-        return Math.max(min, Math.min(value, max));
-    }
-
-    @Override
-    public float clampScale(float scale) {
-        return clamp(getMinimumScale(), scale, getMaximumScale());
-    }
-
-    @Override
-    public float clampScaleFactor(float currentScale, float scaleBy) {
-        return clamp(getMinimumScale() / currentScale, scaleBy, getMaximumScale() / currentScale);
-    }
-
-    private float clampScaleFactor(float scaleBy){
-        return clampScaleFactor(mScale, scaleBy);
-    }
-
-    public void postScale(ScaleGestureDetector detector){
-        float scaleBy = clampScaleFactor(detector.getScaleFactor());
-        postScale(scaleBy, detector.getFocusX(), detector.getFocusY());
-    }
-
-    public void setScale(float scale, float focusX, float focusY, boolean animated){
-        postScale(scale / mScale, focusX, focusY);
-    }
-
-    public void postScale(float scaleBy, float focusX, float focusY){
-        float outScaleBy = clampScaleFactor(scaleBy);
-        mScale *= outScaleBy;
-        if(outScaleBy != 1) mAppliedChange = true;
-        matrix.postScale(outScaleBy, outScaleBy, focusX, focusY);
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -115,13 +39,13 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        postScale(detector);
+        matrix.postScale(detector);
         return true;
     }
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        postScale(detector);
+        matrix.postScale(detector);
         return true;
     }
 
@@ -137,11 +61,7 @@ public class ScaleGestureHelper implements IGestureDetector.ScaleHelper, ScaleGe
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        float min = Math.max(1, minScale);
-        float max = maxScale;
-        float m = (min + max) / 2;
-        float scaleTo = mScale > m ? max : min;
-        setScale(scaleTo, e.getX(), e.getY(), true);
+        matrix.tapToScale(e.getX(), e.getY());
         return true;
     }
 

@@ -28,7 +28,6 @@ public interface IGestureDetector {
         float getMaximumScale();
         float clampScaleFactor(float currentScale, float scaleBy);
         float clampScale(float scale);
-        void forceUpdateFromMatrix();
     }
 
     interface TranslateHelper {
@@ -40,7 +39,6 @@ public interface IGestureDetector {
         void computeScroll();
         RectB canOffset = new RectB();
         boolean canScroll(PointF velocity);
-        void forceUpdateFromMatrix();
     }
 
     interface ScrollResponder {

@@ -4,6 +4,7 @@ const nativeViewName = 'RNZoomableScrollView';
 const nativeViewManagerName = 'RNZoomableScrollViewManager';
 const nativeViewModulerName = 'RNZoomableScrollViewModule';
 const ScrollViewManager = NativeModules[nativeViewManagerName] || NativeModules[nativeViewModulerName];
+export const { Commands } = UIManager.getViewManagerConfig ? UIManager.getViewManagerConfig(nativeViewManagerName) : UIManager[nativeViewManagerName];
 
 export default class ScrollResponder {
     constructor(ref) {
@@ -29,6 +30,15 @@ export default class ScrollResponder {
         UIManager.dispatchViewManagerCommand(
             this.scrollResponderGetScrollableNode(),
             Commands.scrollTo,
+            [x || 0, y || 0, animated !== false],
+        );
+    }
+
+    //  added
+    scrollResponderScrollBy({ x, y, animated }) {
+        UIManager.dispatchViewManagerCommand(
+            this.scrollResponderGetScrollableNode(),
+            Commands.scrollBy,
             [x || 0, y || 0, animated !== false],
         );
     }

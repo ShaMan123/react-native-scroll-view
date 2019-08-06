@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated, Button } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, Animated, Button, Dimensions } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
@@ -75,11 +75,11 @@ export default class App extends Component<Props> {
                 //enabled={false}
                 style={{ backgroundColor: 'red', flexWrap: 'wrap', flexDirection: 'row', top: this.state.a, alignItems: 'center', justifyContent: 'center' }}
                 minimumZoomScale={0.15}
-                maximumZoomScale={5}
+                maximumZoomScale={50}
                 zoomScale={index + 1}
                 key={`customview${index}`}
                 ref={this.scrollRefs[index]}
-                
+                //centerContent
             >
                 <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
                 <Image
@@ -98,7 +98,8 @@ export default class App extends Component<Props> {
                     style={{ width: 300, height: 300 }}
                     source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
                 />
-            </GHCV>
+                </GHCV>
+                
         );
     }
 
@@ -107,7 +108,10 @@ export default class App extends Component<Props> {
     }
 
     onPress = () => {
-        this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 50, width: 720, height: 2400, animated: true});
+        const { width, height } = Dimensions.get('window');
+        //this.getCurrentScrollRef().scrollToEnd();
+        this.getCurrentScrollRef().scrollTo({x: -200, y: -500});
+        //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
     }
 
     render() {

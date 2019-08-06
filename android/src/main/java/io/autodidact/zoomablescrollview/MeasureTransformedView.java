@@ -7,7 +7,7 @@ import android.graphics.RectF;
 import com.facebook.react.uimanager.ThemedReactContext;
 
 public class MeasureTransformedView implements IGestureDetector.MesaureTransformedView {
-    private RectF mLayout = new RectF();
+    private Rect mLayout = new Rect();
     private Rect mViewPort;
     private Matrix matrix;
     private boolean mInitialized = false;
@@ -20,12 +20,33 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
         this.matrix = matrix;
     }
 
+    protected MeasureTransformedView(MeasureTransformedView initialier, Matrix matrix){
+        mViewPort = initialier.mViewPort;
+        mLayoutDirection = initialier.mLayoutDirection;
+        this.matrix = matrix;
+        setLayout(initialier.mLayout);
+    }
+
+    private void init(Rect viewPort, int layoutDirection, Matrix matrix){
+        mViewPort = viewPort;
+        mLayoutDirection = layoutDirection;
+        this.matrix = matrix;
+    }
+
+    public MeasureTransformedView test(){
+        return new MeasureTransformedView(this, new Matrix(matrix));
+    }
+
     public int getLayoutDirection(){
         return mLayoutDirection;
     }
 
     public void setLayout(int l, int t, int r, int b){
-        mLayout.set(l, t, r, b);
+        setLayout(new Rect(l, t, r, b));
+    }
+
+    public void setLayout(Rect layout){
+        mLayout.set(layout);
         mInitialized = true;
     }
 
@@ -49,12 +70,7 @@ public class MeasureTransformedView implements IGestureDetector.MesaureTransform
     public RectF fromRelativeToAbsolute(RectF src){
         RectF dst = new RectF(src);
         dst.offset(mViewPort.left, mViewPort.top);
-        return dst;
-    }
-
-    public RectF fromAbsoluteToRelative(RectF src){
-        RectF dst = new RectF(src);
-        dst.offset(-mViewPort.left, -mViewPort.top);
+        dst.offset(mLayout.left, mLayout.top);
         return dst;
     }
 
