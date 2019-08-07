@@ -46,7 +46,13 @@ public interface IGestureDetector {
     interface ScrollResponder {
         void scrollTo(float x, float y, boolean animated);
         void scrollBy(float x, float y, boolean animated);
+        //void scrollToStart(boolean animated);
         void scrollToEnd(boolean animated);
+        //void scrollToTop(boolean animated);
+        //void scrollToBottom(boolean animated);
+        //void scrollToLeft(boolean animated);
+        //void scrollToRight(boolean animated);
+
         void zoomToRect(float x, float y, float width, float height, boolean animated);
         void zoomToRect(RectF rect, boolean animated);
         void flashScrollIndicators();

@@ -6,6 +6,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import androidx.annotation.IntDef;
 import androidx.core.view.ViewCompat;
 
 import com.facebook.react.modules.i18nmanager.I18nUtil;

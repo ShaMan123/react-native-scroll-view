@@ -58,6 +58,11 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
         view.getGestureManager().getMatrix().setCenterContent(value);
     }
 
+    @ReactProp(name = "horizontal", defaultBoolean = false)
+    public void setHorizontal(RNZoomableScrollView view, boolean value){
+        view.setHorizontal(value);
+    }
+
     @ReactProp(name = "dispatchScrollEvents", defaultBoolean = true)
     public void setEventType(RNZoomableScrollView view, boolean value){
         //view.setDispatchScrollEvents(value);

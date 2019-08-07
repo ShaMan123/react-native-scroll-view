@@ -17,6 +17,7 @@ public class RNZoomableScrollView extends ViewGroup {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private GestureEventManager mGestureManager;
     private ThemedReactContext mContext;
+    private boolean mIsHorizontal = false;
 
     RNZoomableScrollView(ThemedReactContext context){
         super(context);
@@ -63,5 +64,13 @@ public class RNZoomableScrollView extends ViewGroup {
 
         return true;
         //return super.onTouchEvent(event);
+    }
+
+    public boolean isHorizontal(){
+        return mIsHorizontal;
+    }
+
+    public void setHorizontal(boolean value) {
+        mIsHorizontal = value;
     }
 }
