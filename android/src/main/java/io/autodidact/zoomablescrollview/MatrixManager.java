@@ -1,16 +1,13 @@
 package io.autodidact.zoomablescrollview;
 
-import android.graphics.Interpolator;
 import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
-import android.view.animation.OvershootInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 
 public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper, IGestureDetector.MesaureTransformedView, IGestureDetector.ScrollResponder {
@@ -419,56 +416,46 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
     }
 
     public static class MatrixAnimation extends Animation {
-        //  https://stackoverflow.com/questions/33712067/android-how-to-animation-move-the-view-by-using-a-matrix
-        //  http://android-er.blogspot.com/2012/10/create-animation-using-matrix.html
-        private Matrix startMatrix;
-        private Matrix endMatrix;
-        private Matrix tMatrix;
-        private Matrix mWorking = new Matrix();
-        private float[] a = new float[9];
-        private float[] b = new float[9];
-        private float[] c = new float[9];
-        private float[] t1;
-        private float[] t2;
-
-        private float sFactor;
-        private float tFactor;
+        private PointF scaleStart;
+        private PointF scaleEnd;
+        private PointF translateStart;
+        private PointF translateEnd;
 
         MatrixAnimation(Matrix startMatrix, Matrix endMatrix){
-            this.startMatrix = startMatrix;
-            this.endMatrix = endMatrix;
-            Matrix out = new Matrix();
-            tMatrix = new Matrix();
-            startMatrix.invert(out);
-            Log.d(TAG, "MatrixAnimation: startMatrix"+ out);
-            tMatrix.postConcat(out);
-            tMatrix.postConcat(endMatrix);
+            float[] a = new float[9];
+            float[] b = new float[9];
 
             startMatrix.getValues(a);
             endMatrix.getValues(b);
 
-            t1  = new float[]{a[Matrix.MTRANS_X], a[Matrix.MTRANS_Y], a[Matrix.MSCALE_X], 1};
-            t2  = new float[]{b[Matrix.MTRANS_X], b[Matrix.MTRANS_Y], b[Matrix.MSCALE_X], 1};
-
-            //tMatrix.setPolyToPoly(t2, 0, t1, 0, 3);
-
+            scaleStart = new PointF(a[Matrix.MSCALE_X], a[Matrix.MSCALE_Y]);
+            scaleEnd =  new PointF(b[Matrix.MSCALE_X], b[Matrix.MSCALE_Y]);
+            translateStart = new PointF(a[Matrix.MTRANS_X], a[Matrix.MTRANS_Y]);
+            translateEnd = new PointF(b[Matrix.MTRANS_X], b[Matrix.MTRANS_Y]);
 
             setDuration(300);
             setFillAfter(true);
-            setInterpolator(new AccelerateDecelerateInterpolator());
-            Log.d(TAG, "MatrixAnimation: " + tMatrix);
-
+            //setInterpolator(new DecelerateInterpolator());
         }
-
-
 
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
             super.applyTransformation(interpolatedTime, t);
             final Matrix matrix = t.getMatrix();
-            matrix.postScale(t1[2], t1[2]);
-            matrix.postScale(t2[2] * interpolatedTime / t1[2] + 1 - interpolatedTime, t2[2] * interpolatedTime / t1[2] + 1 - interpolatedTime);
-            matrix.postTranslate((t2[0] - t1[0]) * interpolatedTime + t1[0], (t2[1] - t1[1]) * interpolatedTime + t1[1]);
+            PointF sFactor = new PointF(
+                    scaleEnd.x * interpolatedTime / scaleStart.x + 1 - interpolatedTime,
+                    scaleEnd.y * interpolatedTime / scaleStart.y + 1 - interpolatedTime);
+            PointF tFactor = new PointF(
+                    (translateEnd.x - translateStart.x) * interpolatedTime,
+                    (translateEnd.y - translateStart.y) * interpolatedTime);
+
+            //Log.d(TAG, "applyTransformation: " + sFactor + " " + tFactor);
+
+            matrix.postScale(scaleStart.x, scaleStart.y, 0, 0);
+            matrix.postScale(sFactor.x, sFactor.y, 0, 0);
+            matrix.postTranslate(translateStart.x, translateStart.y);
+            matrix.postTranslate(tFactor.x, tFactor.y);
         }
     }
+
 }
