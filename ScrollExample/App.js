@@ -111,15 +111,29 @@ export default class App extends Component<Props> {
 
     onPress = () => {
         const { width, height } = Dimensions.get('window');
-        this.getCurrentScrollRef().scrollToEnd();
-        //this.getCurrentScrollRef().scrollTo({x: 200, y: 1100});
-        //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
+        //this.getCurrentScrollRef().scrollToEnd();
+        //this.getCurrentScrollRef().scrollTo({x: 200, y: 50});
+        this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 200, width: 100, height: 100, animated: true});
     }
 
     onPress1 = () => {
         const { width, height } = Dimensions.get('window');
-        this.getCurrentScrollRef().scrollBy({x: 0, y: -100});
+        this.getCurrentScrollRef().scrollBy({x: 0, y: 100});
         //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
+    }
+
+    render() {
+        return (
+            <View style={{ flex: 1 }}>
+                <GHViewPager
+                    style={{ flex: 1 }}
+                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
+                >
+                    <View>{this.renderPage(0)}</View>
+                    <View>{this.renderPage(1)}</View>
+                </GHViewPager>
+            </View>
+        );
     }
 
     render() {
@@ -133,14 +147,9 @@ export default class App extends Component<Props> {
                     onPress={this.onPress1}
                     title='scrollTo'
                 />
-                <GHViewPager
-                    style={{ flex: 1 }}
-                    onPageSelected={({ nativeEvent: { position } }) => this.selectedPage = position}
-                >
-                    <View>{this.renderPage(0)}</View>
-                    <View>{this.renderPage(1)}</View>
-                </GHViewPager>
                 <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
+                <View style={{flex:1}}>{this.renderPage(0)}</View>
+                <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />
             </View>
         );
     }
@@ -148,9 +157,15 @@ export default class App extends Component<Props> {
     render() {
         return (
             <View style={{ flex: 1 }}>
-                <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />
-                <View style={{flex:1}}>{this.renderPage(0)}</View>
-                <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />
+                <View style={{ flex: 1 }}>{this.renderPage(0)}</View>
+                <Button
+                    onPress={this.onPress}
+                    title='scrollTo'
+                />
+                <Button
+                    onPress={this.onPress1}
+                    title='scrollTo'
+                />
             </View>
         );
     }
