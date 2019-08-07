@@ -67,9 +67,11 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     /**
      *
+     * uses {@link #scrollBy(float, float, boolean)}
      * @param x relative to view
      * @param y relative to view
      * @param animated
+     *
      */
     @Override
     public void scrollTo(float x, float y, boolean animated) {
@@ -82,14 +84,17 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     @Override
     public void scrollBy(float x, float y, boolean animated) {
-        Matrix stale = new Matrix(this);
+        MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(animated);
         PointF clamped = clampOffset(new PointF(-x, -y));
         postTranslate(clamped.x ,clamped.y);
-        MatrixAnimation animation = new MatrixAnimation(stale, this);
-        mView.startAnimation(animation);
+        animationBuilder.run();
         //mView.postInvalidateOnAnimation();
     }
 
+    /**
+     * uses {@link #scrollBy(float, float, boolean)}
+     * @param animated
+     */
     @Override
     public void scrollToEnd(boolean animated) {
         RectF clippingRect = getClippingRect();
@@ -118,7 +123,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     @Override
     public void zoomToRect(RectF dst, boolean animated) {
-        Matrix stale = new Matrix(this);
+        MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(animated);
         RectF src = getAbsoluteLayoutRect();
         scrollTo(dst.left, dst.top, animated);
         float scale = clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
@@ -126,34 +131,14 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         setScale(scale, scale, absDst.centerX(), absDst.centerY());
         mScale = scale;
 
-        MatrixAnimation animation = new MatrixAnimation(stale, this);
-        mView.startAnimation(animation);
+        animationBuilder.run();
 
-        mView.postInvalidateOnAnimation();
-    }
-
-    public void zoomToRect1(RectF dst, boolean animated) {
-        RectF src = getClippingRect();
-        src.offsetTo(0, 0);
-        Matrix matrix = new Matrix();
-        RectF post = new RectF();
-        RectF pre = new RectF();
-
-        //dst.offsetTo(-dst.left, -dst.top);
-        matrix.setRectToRect(src, dst, ScaleToFit.START);
-        mapRect(pre);
-        reset();
-        preTranslate(-src.left, -src.top);
-        postConcat(matrix);
-        mapRect(post);
-        matrix.setRectToRect(pre, post, ScaleToFit.CENTER);
-        forceUpdateFromMatrix();
+        //mView.postInvalidateOnAnimation();
     }
 
     @Override
     public void flashScrollIndicators() {
 
-        //mView.postInvalidateOnAnimation();
     }
 
     /**
@@ -219,15 +204,13 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
      *
      */
 
-
-    /*
-        public void setInitialScale(float scale){
-            if(mDidInitScale) return;
-            mDidInitScale = true;
-            mScale = clampScale(scale);
-            postScale(mScale, mScale, 0, 0);
-        }
-    */
+    private void setInitialScale(float scale){
+        if(mDidInitScale) return;
+        mDidInitScale = true;
+        mScale = clampScale(scale);
+        postScale(mScale, mScale, 0, 0);
+    }
+        
     public float getScale() {
         return mScale;
     }
@@ -415,46 +398,46 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         return Math.max(min, Math.min(value, max));
     }
 
-    public static class MatrixAnimation extends Animation {
-        private PointF scaleStart;
-        private PointF scaleEnd;
-        private PointF translateStart;
-        private PointF translateEnd;
+    public MatrixAnimationBuilder getAnimationBuilder(){
+        return new MatrixAnimationBuilder();
+    }
 
-        MatrixAnimation(Matrix startMatrix, Matrix endMatrix){
-            float[] a = new float[9];
-            float[] b = new float[9];
+    public MatrixAnimationBuilder getAnimationBuilder(boolean animated){
+        return new MatrixAnimationBuilder(animated);
+    }
 
-            startMatrix.getValues(a);
-            endMatrix.getValues(b);
+    protected class MatrixAnimationBuilder {
+        Matrix start;
+        Matrix end;
+        boolean animated;
 
-            scaleStart = new PointF(a[Matrix.MSCALE_X], a[Matrix.MSCALE_Y]);
-            scaleEnd =  new PointF(b[Matrix.MSCALE_X], b[Matrix.MSCALE_Y]);
-            translateStart = new PointF(a[Matrix.MTRANS_X], a[Matrix.MTRANS_Y]);
-            translateEnd = new PointF(b[Matrix.MTRANS_X], b[Matrix.MTRANS_Y]);
-
-            setDuration(300);
-            setFillAfter(true);
-            //setInterpolator(new DecelerateInterpolator());
+        MatrixAnimationBuilder(){
+            this(true);
         }
 
-        @Override
-        protected void applyTransformation(float interpolatedTime, Transformation t) {
-            super.applyTransformation(interpolatedTime, t);
-            final Matrix matrix = t.getMatrix();
-            PointF sFactor = new PointF(
-                    scaleEnd.x * interpolatedTime / scaleStart.x + 1 - interpolatedTime,
-                    scaleEnd.y * interpolatedTime / scaleStart.y + 1 - interpolatedTime);
-            PointF tFactor = new PointF(
-                    (translateEnd.x - translateStart.x) * interpolatedTime,
-                    (translateEnd.y - translateStart.y) * interpolatedTime);
+        MatrixAnimationBuilder(boolean animated){
+            this.animated = animated;
+            fillStart();
+        }
 
-            //Log.d(TAG, "applyTransformation: " + sFactor + " " + tFactor);
+        public void fillStart() {
+            start = MatrixManager.this;
+        }
 
-            matrix.postScale(scaleStart.x, scaleStart.y, 0, 0);
-            matrix.postScale(sFactor.x, sFactor.y, 0, 0);
-            matrix.postTranslate(translateStart.x, translateStart.y);
-            matrix.postTranslate(tFactor.x, tFactor.y);
+        public void fillEnd() {
+            end = MatrixManager.this;
+        }
+
+        public void run(){
+            run(animated);
+        }
+
+        public void run(boolean animated){
+            if(start == null) throw new NullPointerException("start matrix is empty");
+            if(end == null) end = MatrixManager.this;
+            MatrixAnimation animation = new MatrixAnimation(start, end)
+                    .setAnimated(animated);
+            mView.startAnimation(animation);
         }
     }
 

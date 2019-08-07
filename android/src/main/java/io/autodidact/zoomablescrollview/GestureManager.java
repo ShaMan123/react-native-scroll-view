@@ -14,7 +14,9 @@ import android.view.ViewGroup;
 
 import androidx.core.view.ViewCompat;
 
-public class GestureEventManager {
+import com.autodidact.BuildConfig;
+
+public class GestureManager {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private IGestureDetector combinedGestureDetector;
     private MatrixManager mMatrix;
@@ -23,8 +25,9 @@ public class GestureEventManager {
     private TranslateGestureHelper translateGestureHelper;
     private boolean mAppliedChange;
     private VelocityHelper mVelocityHelper;
+    MatrixManager.MatrixAnimationBuilder mAnimationBuilder;
 
-    GestureEventManager(RNZoomableScrollView view){
+    GestureManager(RNZoomableScrollView view){
         mMatrix = new MatrixManager(view);
         mView = view;
         scaleGestureHelper = new ScaleGestureHelper(view.getReactContext(), mMatrix);
@@ -76,11 +79,13 @@ public class GestureEventManager {
 
         canvas.setMatrix(mMatrix.getAbsoluteMatrix());
 
-        Paint p = new Paint();
-        p.setColor(Color.BLUE);
-        Rect rel = getMeasuringHelper().getLayout();
-        rel.offsetTo(0, 0);
-        canvas.drawRect(rel, p);
+        if(BuildConfig.DEBUG){
+            Paint p = new Paint();
+            p.setColor(Color.BLUE);
+            Rect rel = getMeasuringHelper().getLayout();
+            rel.offsetTo(0, 0);
+            canvas.drawRect(rel, p);
+        }
     }
 
     public boolean canScroll(){
@@ -94,6 +99,7 @@ public class GestureEventManager {
     public boolean onTouchEvent(MotionEvent event) {
         mVelocityHelper.onTouchEvent(event);
         mAppliedChange = false;
+        mAnimationBuilder = getMatrix().getAnimationBuilder(true);
 
         if(scaleGestureHelper.onTouchEvent(event)) {
             translateGestureHelper.resetTouchPointers();
@@ -101,6 +107,10 @@ public class GestureEventManager {
         }
         if(translateGestureHelper.onTouchEvent(event)) {
             mAppliedChange = true;
+        }
+
+        if(mAppliedChange) {
+            mAnimationBuilder.run();
         }
 
         return mAppliedChange;

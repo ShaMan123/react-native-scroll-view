@@ -118,7 +118,7 @@ export default class App extends Component<Props> {
 
     onPress1 = () => {
         const { width, height } = Dimensions.get('window');
-        this.getCurrentScrollRef().scrollBy({x: 0, y: 100});
+        this.getCurrentScrollRef().scrollBy({x: 0, y: 100, animated:true});
         //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
     }
 
@@ -154,7 +154,7 @@ export default class App extends Component<Props> {
         );
     }
 
-    render() {
+    render1() {
         return (
             <View style={{ flex: 1 }}>
                 <View style={{ flex: 1 }}>{this.renderPage(0)}</View>

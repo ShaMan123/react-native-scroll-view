@@ -1,30 +1,22 @@
 package io.autodidact.zoomablescrollview;
 
 import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.PointF;
-import android.graphics.Rect;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
-import android.widget.EdgeEffect;
-import android.widget.ScrollView;
 
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.views.scroll.ReactScrollView;
-import com.facebook.react.views.view.ReactViewGroup;
 
 public class RNZoomableScrollView extends ViewGroup {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
-    private GestureEventManager mGestureManager;
+    private GestureManager mGestureManager;
     private ThemedReactContext mContext;
     private boolean mIsHorizontal = false;
 
     RNZoomableScrollView(ThemedReactContext context){
         super(context);
         mContext = context;
-        mGestureManager = new GestureEventManager(this);
-        setClipChildren(false);
+        mGestureManager = new GestureManager(this);
+        setClipChildren(true);
         //setRemoveClippedSubviews(false);
     }
 
@@ -32,7 +24,7 @@ public class RNZoomableScrollView extends ViewGroup {
         return mContext;
     }
 
-    public GestureEventManager getGestureManager() {
+    public GestureManager getGestureManager() {
         return mGestureManager;
     }
 
