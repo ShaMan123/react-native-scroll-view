@@ -4,12 +4,21 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.LayoutDirection;
+import android.util.Log;
 import android.view.ScaleGestureDetector;
+import android.view.View;
+
+import com.facebook.react.bridge.ReadableArray;
+
+import javax.annotation.Nullable;
 
 public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGesture.TranslateHelper, IGesture.MesaureTransformedView, IGesture.ScrollResponder {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
 
     protected RNZoomableScrollView mView;
+
+    private boolean mViewRequestsMatrixConcat = true;
+    private Matrix mProccessedViewMatrix = new Matrix();
 
     private float mScale = 1f;
     private float minScale = 0.75f;
@@ -47,12 +56,46 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         return mMeasurementProvider;
     }
 
-    public void postViewMatrix(Matrix matrix){
-        float[] values = new float[9];
-        getValues(values);
-        postScale((values[Matrix.MSCALE_X] + values[Matrix.MSCALE_X]) * 0.5f, mView.getPivotX(), mView.getPivotY());
+    public boolean needsViewMatrixConcat() {
+        return mViewRequestsMatrixConcat;
+    }
 
-        postConcat(matrix);
+    private @Nullable ReadableArray matrixCSS;
+    public void requestViewMatrixConcat(@Nullable ReadableArray matrix) {
+        matrixCSS = matrix;
+        if(getMeasuringHelper().isInitialized()) {
+            postViewMatrix();
+        }
+        else mViewRequestsMatrixConcat = true;
+    }
+
+    protected void postViewMatrix(){
+        MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(true);
+        mViewRequestsMatrixConcat = false;
+        RNZoomableScrollViewManager.tryHackSetTransform(mView, matrixCSS);
+        Log.d(TAG, "postViewMatrix: " + mView.getChildAt(0).getMatrix());
+        if(mProccessedViewMatrix != null){
+            Matrix invert = new Matrix();
+            mProccessedViewMatrix.invert(invert);
+            postMatrix(invert);
+        }
+        mProccessedViewMatrix.reset();
+        mProccessedViewMatrix.preTranslate(getContentRect().centerX(), getContentRect().centerY());
+        mProccessedViewMatrix.postConcat(mView.getChildAt(0).getMatrix());
+
+        postMatrix(mProccessedViewMatrix);
+        computeScroll();
+        animationBuilder.run();
+    }
+
+    public void postMatrix(Matrix matrix){
+        super.postConcat(matrix);
+        /*
+        float[] values = new float[9];
+        matrix.getValues(values);
+        postScale((values[Matrix.MSCALE_X] + values[Matrix.MSCALE_X]) * 0.5f, 0, 0);
+        postTranslate(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
+        */
     }
 
     public void forceUpdateFromMatrix() {

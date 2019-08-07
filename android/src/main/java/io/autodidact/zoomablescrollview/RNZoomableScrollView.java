@@ -8,17 +8,19 @@ import android.view.ViewGroup;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.views.view.ReactViewGroup;
 
-public class RNZoomableScrollView extends ViewGroup {
+public class RNZoomableScrollView extends ReactViewGroup {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private GestureManager mGestureManager;
     private ThemedReactContext mContext;
     private boolean mIsHorizontal = false;
+    private Runnable mRunnable;
 
     RNZoomableScrollView(ThemedReactContext context){
         super(context);
         mContext = context;
         mGestureManager = new GestureManager(this);
         setClipChildren(true);
+        setOverflow("hidden");
         //setRemoveClippedSubviews(false);
     }
 

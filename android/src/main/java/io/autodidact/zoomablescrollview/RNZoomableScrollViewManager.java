@@ -1,6 +1,8 @@
 package io.autodidact.zoomablescrollview;
 
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
@@ -8,6 +10,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
+import com.facebook.react.uimanager.BaseViewManager;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
@@ -15,6 +18,8 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -32,10 +37,37 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
         super();
     }
 
+    public static void tryHackSetTransform(final @Nonnull RNZoomableScrollView view, final @Nullable ReadableArray matrix){
+        try {
+            if(matrix == null){
+                Method m = BaseViewManager.class.getDeclaredMethod("resetTransformProperty", View.class);
+                m.setAccessible(true);
+                m.invoke(BaseViewManager.class, view.getChildAt(0));
+            }
+            else {
+                Method m = BaseViewManager.class.getDeclaredMethod("setTransformProperty", View.class, ReadableArray.class);
+                m.setAccessible(true);
+                m.invoke(BaseViewManager.class, view.getChildAt(0), matrix);
+            }
+            view.postInvalidateOnAnimation();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * call {@link #tryHackSetTransform(RNZoomableScrollView, ReadableArray)} to set the transformation on the content rect
+     * todo: needs more work, is not working properly yet - disabled transformations
+     * @param view
+     * @param matrix
+     */
     @Override
-    protected void onAfterUpdateTransaction(@Nonnull RNZoomableScrollView view) {
-        super.onAfterUpdateTransaction(view);
-        view.getMatrix().postViewMatrix(view.getMatrix());
+    public void setTransform(final @Nonnull RNZoomableScrollView view, final @Nullable ReadableArray matrix) {
+        //view.getGestureManager().tryPostViewMatrixConcat(matrix);
     }
 
     @Nonnull
@@ -46,7 +78,8 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
 
     @ReactProp(name = "zoomScale", defaultFloat = 1f)
     public void setZoomScale(RNZoomableScrollView view, float value){
-        //view.getGestureManager().getMatrix().setInitialScale(value);
+        view.setScaleX(value);
+        view.setScaleY(value);
     }
 
     @ReactProp(name = "minimumZoomScale", defaultFloat = 0.75f)

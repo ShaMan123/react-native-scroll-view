@@ -10,6 +10,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.autodidact.BuildConfig;
+import com.facebook.react.bridge.ReadableArray;
+
+import javax.annotation.Nullable;
 
 public class GestureManager {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -83,17 +86,26 @@ public class GestureManager {
         }
 */
         getMeasuringHelper().onLayout(changed, l, t, r, b);
+        if(mMatrix.needsViewMatrixConcat()) mMatrix.postViewMatrix();
 /*
         clip = getMeasuringHelper().getClippingRect();
         mMatrix.preTranslate(clip.left, clip.top);
 */
     }
 
-    protected void onDraw(Canvas canvas) {
-        //canvas.setMatrix(new Matrix());
-        canvas.clipRect(getMeasuringHelper().getClippingRect());
 
-        //canvas.setMatrix(mMatrix.getAbsoluteMatrix());
+
+    /**
+     * Tries to post {@link #mView} matrix to {@link #mMatrix}.
+     * In case layout has not occurred yet the request will be handled after layout by {@link #onLayout(boolean, int, int, int, int)}
+     * invoked after {@link RNZoomableScrollViewManager} received props
+     */
+    protected void tryPostViewMatrixConcat(@Nullable ReadableArray matrix){
+        mMatrix.requestViewMatrixConcat(matrix);
+    }
+
+    protected void onDraw(Canvas canvas) {
+        canvas.clipRect(getMeasuringHelper().getClippingRect());
 
         if(BuildConfig.DEBUG){
             Paint p = new Paint();
