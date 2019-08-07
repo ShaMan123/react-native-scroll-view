@@ -122,7 +122,7 @@ export default class App extends Component<Props> {
         //this.getCurrentScrollRef().getScrollResponder().scrollResponderZoomTo({x: 50, y: 0, width, height: height - this.state.a, animated: true});
     }
 
-    render() {
+    renderPager() {
         return (
             <View style={{ flex: 1 }}>
                 <GHViewPager
@@ -136,7 +136,7 @@ export default class App extends Component<Props> {
         );
     }
 
-    render() {
+    render1() {
         return (
             <View style={{ flex: 1 }}>
                 <Button
@@ -154,9 +154,14 @@ export default class App extends Component<Props> {
         );
     }
 
-    render1() {
+    render2() {
         return (
             <View style={{ flex: 1 }}>
+                <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
+                <Button
+                    onPress={this.onPress}
+                    title='scrollTo'
+                />
                 <View style={{ flex: 1 }}>{this.renderPage(0)}</View>
                 <Button
                     onPress={this.onPress}
@@ -184,6 +189,11 @@ export default class App extends Component<Props> {
                 </Animated.View>
             </PanGestureHandler>
         );
+    }
+
+    render() {
+        //return this.render1();
+        return this.render2()
     }
 }
 

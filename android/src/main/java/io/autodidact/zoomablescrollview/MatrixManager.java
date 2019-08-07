@@ -71,7 +71,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
      */
     @Override
     public void scrollTo(float x, float y, boolean animated) {
-        RectF layoutRect = getAbsoluteLayoutRect();
+        RectF layoutRect = getContentRect();
         RectF transformedRect = getTransformedRect();
         layoutRect.offset(-x, -y);
 
@@ -94,7 +94,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     @Override
     public void scrollToEnd(boolean animated) {
         RectF clippingRect = getClippingRect();
-        RectF layoutRect = getAbsoluteLayoutRect();
+        RectF layoutRect = getContentRect();
         RectF transformedRect = getTransformedRect();
 
         PointF relEnd = new PointF(
@@ -120,11 +120,11 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     @Override
     public void zoomToRect(RectF dst, boolean animated) {
         MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(animated);
-        RectF src = getAbsoluteLayoutRect();
+        RectF src = getContentRect();
         scrollTo(dst.left, dst.top, animated);
         float scale = clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
-        RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
-        setScale(scale, scale, absDst.centerX(), absDst.centerY());
+        dst.offset(src.left, src.top);        //RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
+        setScale(scale, scale, dst.centerX(), dst.centerY());
         mScale = scale;
 
         animationBuilder.run();
@@ -155,7 +155,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         out.postConcat(mView.getMatrix());
         return out;
 /*
-        RectF mLayout = getAbsoluteLayoutRect();
+        RectF mLayout = getContentRect();
         Matrix m = new Matrix();
         //m.preTranslate(mLayout.left, mLayout.top);
 
@@ -177,8 +177,8 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         return m;
     }
 
-    public RectF getAbsoluteLayoutRect(){
-        return mMeasurementProvider.getAbsoluteLayoutRect();
+    public RectF getContentRect(){
+        return mMeasurementProvider.getContentRect();
     }
 
     @Override
@@ -187,7 +187,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     }
 
     public RectF getTransformedRect(){
-        RectF src = new RectF(getAbsoluteLayoutRect());
+        RectF src = new RectF(getContentRect());
         RectF dst = new RectF();
         src.offsetTo(0, 0);
         getAbsoluteMatrix().mapRect(dst, src);
@@ -433,7 +433,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
             if(end == null) end = MatrixManager.this;
             MatrixAnimation animation = new MatrixAnimation(start, end)
                     .setAnimated(animated);
-            mView.startAnimation(animation);
+            mView.getChildAt(0).startAnimation(animation);
         }
     }
 

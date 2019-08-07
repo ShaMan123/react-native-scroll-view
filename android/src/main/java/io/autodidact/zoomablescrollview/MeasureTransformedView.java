@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 
+import com.autodidact.BuildConfig;
 import com.facebook.react.uimanager.ThemedReactContext;
 
 import static io.autodidact.zoomablescrollview.RNZoomableScrollView.TAG;
@@ -55,7 +56,9 @@ public class MeasureTransformedView {
 
         mInitialized = true;
 
-        Log.d(TAG, "onLayout: clip " + mClipLayout + ", layout " + mLayout);
+        if(BuildConfig.DEBUG){
+            Log.d(TAG, "onLayout: clip " + mClipLayout + ", layout " + mLayout);
+        }
     }
 
     protected boolean isInitialized(){
@@ -66,14 +69,26 @@ public class MeasureTransformedView {
         if(!mInitialized) throw new IllegalStateException("MeasureTransformedView has not been initialized yet");
     }
 
-    public RectF getAbsoluteLayoutRect(){
+    /**
+     * very touchy and bug prone function
+     * @return
+     */
+    public RectF getContentRect(){
         validateState();
         return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
+        //return new RectF(mLayout);  //return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
     }
 
+    /**
+     * very touchy and bug prone function
+     * @return
+     */
     public RectF getClippingRect() {
         validateState();
-        Rect mRect = mClipLayout;//fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
+        return fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
+        //return new RectF(mClipLayout);
+        /*
+        RectF mRect =fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
 
         RectF out = new RectF(
                 Math.max(mViewPort.left, mRect.left),
@@ -82,6 +97,7 @@ public class MeasureTransformedView {
                 Math.min(mViewPort.bottom, mRect.bottom)
         );
         return out;
+        */
     }
 
     public RectF fromRelativeToAbsolute(RectF src){

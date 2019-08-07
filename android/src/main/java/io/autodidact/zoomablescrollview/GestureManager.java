@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.autodidact.BuildConfig;
@@ -18,7 +20,8 @@ public class GestureManager {
     private TranslateGestureHelper translateGestureHelper;
     private boolean mAppliedChange;
     private VelocityHelper mVelocityHelper;
-    MatrixManager.MatrixAnimationBuilder mAnimationBuilder;
+    private MatrixManager.MatrixAnimationBuilder mAnimationBuilder;
+    private boolean mInterceptedEvent;
 
     GestureManager(RNZoomableScrollView view){
         mMatrix = new MatrixManager(view);
@@ -68,22 +71,22 @@ public class GestureManager {
     }
 
     public boolean requestDisallowInterceptTouchEvent(MotionEvent ev) {
-        return canScroll() && isPointerInBounds(ev);
+        return canScroll();
     }
 
     public void onLayout(boolean changed, int l, int t, int r, int b) {
-        /*
+/*
         RectF clip;
         if(getMeasuringHelper().isInitialized()){
             clip = getMeasuringHelper().getClippingRect();
             mMatrix.preTranslate(-clip.left, -clip.top);
         }
-        */
+*/
         getMeasuringHelper().onLayout(changed, l, t, r, b);
-        /*
+/*
         clip = getMeasuringHelper().getClippingRect();
         mMatrix.preTranslate(clip.left, clip.top);
-        */
+*/
     }
 
     protected void onDraw(Canvas canvas) {
@@ -102,7 +105,11 @@ public class GestureManager {
     }
 
     public boolean onInterceptTouchEvent(MotionEvent event){
-        return isPointerInBounds(event);
+        if(!mInterceptedEvent){
+            mInterceptedEvent = !isPointerInBounds(event);
+        }
+        if(event.getActionMasked() == (MotionEvent.ACTION_UP | MotionEvent.ACTION_CANCEL)) mInterceptedEvent = false;
+        return true;
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -122,6 +129,8 @@ public class GestureManager {
         if(mAppliedChange) {
             mAnimationBuilder.run();
         }
+
+        if(event.getActionMasked() == (MotionEvent.ACTION_UP | MotionEvent.ACTION_CANCEL)) mInterceptedEvent = false;
 
         return mAppliedChange;
     }
