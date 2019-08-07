@@ -3,7 +3,7 @@ package io.autodidact.zoomablescrollview;
 import android.graphics.Matrix;
 import android.view.MotionEvent;
 
-public class MatrixGestureDetector implements IGestureDetector {
+public class MatrixGestureDetector implements IGesture {
     private static final String TAG = "MatrixGestureDetector";
 
     private int ptpIdx = 0;

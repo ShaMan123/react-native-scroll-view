@@ -4,21 +4,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.util.LayoutDirection;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
-
-import androidx.core.view.ViewCompat;
 
 import com.autodidact.BuildConfig;
 
 public class GestureManager {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
-    private IGestureDetector combinedGestureDetector;
+    private IGesture combinedGestureDetector;
     private MatrixManager mMatrix;
     private RNZoomableScrollView mView;
     private ScaleGestureHelper scaleGestureHelper;
@@ -36,8 +29,8 @@ public class GestureManager {
     }
 
     /*
-    private void setGestureDetector(ThemedReactContext context, @IGestureDetector.GestureDetectors int detectorType){
-        if (detectorType == IGestureDetector.GestureDetectors.MATRIX_GESTURE_DETECTOR){
+    private void setGestureDetector(ThemedReactContext context, @IGesture.GestureDetectors int detectorType){
+        if (detectorType == IGesture.GestureDetectors.MATRIX_GESTURE_DETECTOR){
             combinedGestureDetector = new MatrixGestureDetector(this).setRotationEnabled(false);
         }
         else{
@@ -62,15 +55,23 @@ public class GestureManager {
         return mMatrix.getMeasuringHelper();
     }
 
+    /*
+        Events
+     */
+
     public void onLayout(boolean changed, int l, int t, int r, int b) {
+        /*
         RectF clip;
         if(getMeasuringHelper().isInitialized()){
             clip = getMeasuringHelper().getClippingRect();
             mMatrix.preTranslate(-clip.left, -clip.top);
         }
+        */
         getMeasuringHelper().onLayout(changed, l, t, r, b);
+        /*
         clip = getMeasuringHelper().getClippingRect();
         mMatrix.preTranslate(clip.left, clip.top);
+        */
     }
 
     protected void onDraw(Canvas canvas) {

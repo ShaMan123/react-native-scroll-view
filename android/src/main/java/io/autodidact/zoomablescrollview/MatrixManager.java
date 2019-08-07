@@ -4,13 +4,9 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.LayoutDirection;
-import android.util.Log;
 import android.view.ScaleGestureDetector;
-import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Transformation;
 
-public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper, IGestureDetector.MesaureTransformedView, IGestureDetector.ScrollResponder {
+public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGesture.TranslateHelper, IGesture.MesaureTransformedView, IGesture.ScrollResponder {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
 
     protected RNZoomableScrollView mView;

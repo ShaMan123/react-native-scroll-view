@@ -12,7 +12,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public interface IGestureDetector {
+public interface IGesture {
     public Matrix getMatrix();
     public boolean onTouchEvent(MotionEvent motionEvent);
 
