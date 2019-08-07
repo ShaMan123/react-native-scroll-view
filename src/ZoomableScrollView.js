@@ -70,28 +70,6 @@ const directionalLock = {
     vertical: 'vertical'
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1
-    },
-    indicator: {
-        position: 'absolute',
-        backgroundColor: 'white',
-        borderRadius: 25
-    },
-    horizontalScrollIndicator: {
-        bottom: 0,
-        right: 0,
-        width: 100,
-        height: 10
-    },
-    verticalScrollIndicator: {
-        top: 0,
-        width: 10,
-        height: 100
-    }
-});
-
 export default class ScrollView extends Component {
     static propTypes = {
         //  zoom props
@@ -152,10 +130,6 @@ export default class ScrollView extends Component {
         showsVerticalScrollIndicator: true,
 
         contentContainerStyle: null,
-        style: styles.container,
-        indicatorStyle: styles.indicator,
-        horizontalIndicatorStyle: styles.horizontalScrollIndicator,
-        verticalIndicatorStyle: styles.verticalScrollIndicator,
         refreshControl: null,
 
         onStartShouldSetResponder: () => false,
@@ -214,9 +188,11 @@ export default class ScrollView extends Component {
     }
 
     render() {
+        const { style, contentContainerStyle } = this.props;
         return (
             <NativeView
                 {...this.props}
+                style={[style, styles.noTransform]}
                 ref={this._setRef}
                 onScroll={(e) => console.log(e.nativeEvent)}
                 onScrollBeginDrag={(e) => console.log('begin', e.nativeEvent)}
@@ -224,6 +200,7 @@ export default class ScrollView extends Component {
             >
                 <View
                     collapsable={false}
+                    style={[contentContainerStyle, styles.noTransform, { transform: [{scale:2}]}]}
                 /*style={{ flexWrap: 'wrap', flexDirection: 'row' }}*/
                 >
                     {this.props.children}
@@ -233,8 +210,11 @@ export default class ScrollView extends Component {
     }
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     base: {
         flex: 1
+    },
+    noTransform: {
+        transform: []
     }
 });

@@ -47,6 +47,13 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         return mMeasurementProvider;
     }
 
+    public void postViewMatrix(Matrix matrix){
+        float[] values = new float[9];
+        getValues(values);
+        postScale((values[Matrix.MSCALE_X] + values[Matrix.MSCALE_X]) * 0.5f, mView.getPivotX(), mView.getPivotY());
+
+        postConcat(matrix);
+    }
 
     public void forceUpdateFromMatrix() {
         float[] values = new float[9];
@@ -340,6 +347,12 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     @Override
     public void computeScroll() {
         clampOffset(new PointF(0, 0));
+    }
+
+    @Override
+    public boolean postTranslate(float dx, float dy) {
+        PointF t = clampOffset(new PointF(dx, dy));
+        return postTranslate(t.x, t.y);
     }
 
     @Override

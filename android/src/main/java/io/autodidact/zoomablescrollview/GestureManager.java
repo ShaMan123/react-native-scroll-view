@@ -100,7 +100,7 @@ public class GestureManager {
             p.setColor(Color.BLUE);
             Rect rel = getMeasuringHelper().getLayout();
             rel.offsetTo(0, 0);
-            canvas.drawRect(rel, p);
+            //canvas.drawRect(rel, p);
         }
     }
 

@@ -32,6 +32,12 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
         super();
     }
 
+    @Override
+    protected void onAfterUpdateTransaction(@Nonnull RNZoomableScrollView view) {
+        super.onAfterUpdateTransaction(view);
+        view.getMatrix().postViewMatrix(view.getMatrix());
+    }
+
     @Nonnull
     @Override
     protected RNZoomableScrollView createViewInstance(@Nonnull ThemedReactContext reactContext) {

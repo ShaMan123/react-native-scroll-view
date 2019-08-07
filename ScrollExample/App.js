@@ -73,7 +73,7 @@ export default class App extends Component<Props> {
                 onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
                 onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
                 //enabled={false}
-                style={{ backgroundColor: 'red', flex: 1,/* top: this.state.a, /*flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',transform: [{ scaleX:1 }, { scaleY: 1 }, {rotateX:'40deg'}] */ }}
+                style={{ backgroundColor: 'red', flex: 1, transform: [{ translateX: 50 }, { scaleX: 0.5 }, { scaleY: 0.5 }]  /* top: this.state.a, /*flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',transform: [{ scaleX:1 }, { scaleY: 1 }, {rotateX:'40deg'}] */ }}
                 minimumZoomScale={0.15}
                 maximumZoomScale={50}
                 zoomScale={index + 1}
@@ -138,7 +138,7 @@ export default class App extends Component<Props> {
 
     renderFreakShow() {
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, transform: [{ translateX: 50 }, { scaleX: 0.5 }, { scaleY: 0.5 }] }}>
                 <Button
                     onPress={this.onPress}
                     title='scrollTo'
@@ -149,7 +149,7 @@ export default class App extends Component<Props> {
                     hitSlop={{bottom:0}}
                 />
                 <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
-                <View style={{flex:1}}>{this.renderPage(0)}</View>
+                <View style={{ flex: 1 }}>{this.renderPage(0)}</View>
                 <View style={{ width: 360, height: 250, backgroundColor: 'green' }} collapsable={false} />
             </View>
         );
@@ -157,7 +157,7 @@ export default class App extends Component<Props> {
 
     renderStandard() {
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, transform: [{ translateX: 50 }, { scaleX: 0.5 }, {scaleY:0.5}] }}>
                 <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
                 <Button
                     onPress={this.onPress}
@@ -198,7 +198,7 @@ export default class App extends Component<Props> {
 
     renderMenu() {
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, alignItems: 'stretch', justifyContent: 'space-around' }}>
                 <Button
                     title="Android ViewPager"
                     onPress={() => this.go(1)}
@@ -230,11 +230,14 @@ export default class App extends Component<Props> {
         return (
             <>
                 {this.getPage()}
-                <Button
-                    style={{zIndex:1}}
-                    title="Back"
-                    onPress={() => this.go(0)}
-                />
+                {
+                    this.state.page !== 0 &&
+                    <Button
+                        style={{ zIndex: 1 }}
+                        title="Back"
+                        onPress={() => this.go(0)}
+                    />
+                }
             </>
         );
     }
