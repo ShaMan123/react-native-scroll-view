@@ -70,23 +70,28 @@ public class MeasureTransformedView {
     }
 
     /**
-     * very touchy and bug prone function
+     * very touchy function
+     * all logic uses this
      * @return
      */
     public RectF getContentRect(){
         validateState();
-        return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
-        //return new RectF(mLayout);  //return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
+        RectF rect = new RectF(mLayout);
+        rect.offsetTo(0, 0);
+        return rect;  //return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
     }
 
     /**
-     * very touchy and bug prone function
+     * very touchy function
+     * all logic uses this
      * @return
      */
     public RectF getClippingRect() {
         validateState();
-        return fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
-        //return new RectF(mClipLayout);
+        //return fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
+        RectF rect = new RectF(mClipLayout);
+        rect.offsetTo(0, 0);
+        return new RectF(rect);
         /*
         RectF mRect =fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
 
@@ -100,6 +105,7 @@ public class MeasureTransformedView {
         */
     }
 
+    @Deprecated
     public RectF fromRelativeToAbsolute(RectF src){
         validateState();
         RectF dst = new RectF(src);
@@ -108,6 +114,7 @@ public class MeasureTransformedView {
         return dst;
     }
 
+    @Deprecated
     public RectF fromRelativeToViewPortToAbsolute(RectF src){
         validateState();
         RectF dst = new RectF(src);

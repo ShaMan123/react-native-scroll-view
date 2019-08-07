@@ -26,7 +26,7 @@ const GHViewPager = createNativeWrapper(ViewPager, { shouldActivateOnStart: fals
 
 type Props = {};
 export default class App extends Component<Props> {
-    state = { a: 150 }
+    state = { a: 150, page: 0 }
     scrollRefs = [React.createRef(), React.createRef()];
     selectedPage = 0;
     componentDidMount() {
@@ -136,7 +136,7 @@ export default class App extends Component<Props> {
         );
     }
 
-    render1() {
+    renderFreakShow() {
         return (
             <View style={{ flex: 1 }}>
                 <Button
@@ -146,6 +146,7 @@ export default class App extends Component<Props> {
                 <Button
                     onPress={this.onPress1}
                     title='scrollTo'
+                    hitSlop={{bottom:0}}
                 />
                 <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
                 <View style={{flex:1}}>{this.renderPage(0)}</View>
@@ -154,7 +155,7 @@ export default class App extends Component<Props> {
         );
     }
 
-    render2() {
+    renderStandard() {
         return (
             <View style={{ flex: 1 }}>
                 <View style={{ width: 360, height: 50, backgroundColor: 'green' }} collapsable={false} />
@@ -191,9 +192,51 @@ export default class App extends Component<Props> {
         );
     }
 
+    go = (page) => {
+        this.setState({ page });
+    }
+
+    renderMenu() {
+        return (
+            <View style={{ flex: 1 }}>
+                <Button
+                    title="Android ViewPager"
+                    onPress={() => this.go(1)}
+                />
+                <Button
+                    title="Freaky Layout"
+                    onPress={() => this.go(2)}
+                />
+                <Button
+                    title="Standard Use Case"
+                    onPress={() => this.go(3)}
+                />
+            </View>
+        );
+    }
+
+    getPage() {
+        switch (this.state.page) {
+            default:
+            case 0: return this.renderMenu();
+            case 1: return this.renderPager();
+            case 2: return this.renderFreakShow();
+            case 3: return this.renderStandard();
+        }
+    }
+    
+
     render() {
-        //return this.render1();
-        return this.render2()
+        return (
+            <>
+                {this.getPage()}
+                <Button
+                    style={{zIndex:1}}
+                    title="Back"
+                    onPress={() => this.go(0)}
+                />
+            </>
+        );
     }
 }
 

@@ -90,10 +90,10 @@ public class GestureManager {
     }
 
     protected void onDraw(Canvas canvas) {
-        canvas.setMatrix(new Matrix());
+        //canvas.setMatrix(new Matrix());
         canvas.clipRect(getMeasuringHelper().getClippingRect());
 
-        canvas.setMatrix(mMatrix.getAbsoluteMatrix());
+        //canvas.setMatrix(mMatrix.getAbsoluteMatrix());
 
         if(BuildConfig.DEBUG){
             Paint p = new Paint();

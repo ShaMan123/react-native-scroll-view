@@ -36,7 +36,7 @@ public class RNZoomableScrollView extends ViewGroup {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //mGestureManager.onDraw(canvas);
+        mGestureManager.onDraw(canvas);
         super.onDraw(canvas);
     }
 
