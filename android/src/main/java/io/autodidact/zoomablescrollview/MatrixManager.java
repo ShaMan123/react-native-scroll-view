@@ -88,8 +88,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     @Override
     public void scrollBy(float x, float y, boolean animated) {
         MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(animated);
-        PointF clamped = clampOffset(new PointF(-x, -y));
-        postTranslate(clamped.x ,clamped.y);
+        postTranslate(-x, -y);
         animationBuilder.run();
         //mView.postInvalidateOnAnimation();
     }
@@ -352,7 +351,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     @Override
     public boolean postTranslate(float dx, float dy) {
         PointF t = clampOffset(new PointF(dx, dy));
-        return postTranslate(t.x, t.y);
+        return super.postTranslate(t.x, t.y) && t.length() > 0;
     }
 
     @Override

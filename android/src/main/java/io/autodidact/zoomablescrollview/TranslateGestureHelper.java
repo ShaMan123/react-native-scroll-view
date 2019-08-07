@@ -16,8 +16,6 @@ public class TranslateGestureHelper implements GestureEventData.Displacement {
         this.matrix = matrix;
     }
 
-    public PointF raw = new PointF();
-    public PointF clamped = new PointF();
     private PointF pointer = new PointF();
     private PointF prevPointer = new PointF();
     private int prevPointerId = -1;
@@ -39,10 +37,7 @@ public class TranslateGestureHelper implements GestureEventData.Displacement {
             if(mResetPrevPointer) mResetPrevPointer = false;
         }
 
-        raw.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
-        clamped.set(matrix.clampOffset(raw));
-        matrix.postTranslate(clamped.x, clamped.y);
-        if(clamped.length() > 0) mAppliedChange = true;
+        mAppliedChange = matrix.postTranslate(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
 
         prevPointer.set(pointer);
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL) {
