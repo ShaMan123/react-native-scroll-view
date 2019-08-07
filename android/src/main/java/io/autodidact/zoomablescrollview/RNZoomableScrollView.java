@@ -27,12 +27,16 @@ public class RNZoomableScrollView extends ViewGroup {
         //setRemoveClippedSubviews(false);
     }
 
+    public ThemedReactContext getReactContext() {
+        return mContext;
+    }
+
     public GestureEventManager getGestureManager() {
         return mGestureManager;
     }
 
-    public ThemedReactContext getReactContext() {
-        return mContext;
+    public MatrixManager getMatrix() {
+        return mGestureManager.getMatrix();
     }
 
     @Override

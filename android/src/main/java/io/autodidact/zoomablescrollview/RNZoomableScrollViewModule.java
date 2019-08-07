@@ -33,7 +33,7 @@ public class RNZoomableScrollViewModule extends ReactContextBaseJavaModule {
         uiManager.addUIBlock(new UIBlock() {
             public void execute(NativeViewHierarchyManager nvhm) {
                 RNZoomableScrollView view = (RNZoomableScrollView) nvhm.resolveView(tag);
-                view.getGestureManager().zoomToRect(
+                view.getMatrix().zoomToRect(
                         PixelUtil.toPixelFromDIP(rect.getInt("x")),
                         PixelUtil.toPixelFromDIP(rect.getInt("y")),
                         PixelUtil.toPixelFromDIP(rect.getInt("width")),

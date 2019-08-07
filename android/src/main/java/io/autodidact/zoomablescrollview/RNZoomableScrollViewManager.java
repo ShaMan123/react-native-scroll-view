@@ -100,12 +100,12 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
             case Commands.SCROLL_TO:
                 x = PixelUtil.toPixelFromDIP(args.getDouble(0));
                 y = PixelUtil.toPixelFromDIP(args.getDouble(1));
-                root.getGestureManager().scrollTo(x, y, animated);
+                root.getMatrix().scrollTo(x, y, animated);
                 break;
             case Commands.SCROLL_BY:
                 x = PixelUtil.toPixelFromDIP(args.getDouble(0));
                 y = PixelUtil.toPixelFromDIP(args.getDouble(1));
-                root.getGestureManager().scrollBy(x, y, animated);
+                root.getMatrix().scrollBy(x, y, animated);
                 break;
             case Commands.ZOOM_TO_RECT:
                 Log.d(TAG, "ZOOM_TO_RECT: " + args.getType(0).name());
@@ -124,13 +124,13 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
                 }
                 else throw new IllegalArgumentException("received bad args for zoomToRect");
 
-                root.getGestureManager().zoomToRect(x, y, width, height, animated);
+                root.getMatrix().zoomToRect(x, y, width, height, animated);
                 break;
             case Commands.SCROLL_TO_END:
-                root.getGestureManager().scrollToEnd(animated);
+                root.getMatrix().scrollToEnd(animated);
                 break;
             case Commands.FLASH_SCROLL_INDICATORS:
-                root.getGestureManager().flashScrollIndicators();
+                root.getMatrix().flashScrollIndicators();
                 break;
             default: throw new IllegalArgumentException(getName() + ": Command " + commandId + " not found");
         }

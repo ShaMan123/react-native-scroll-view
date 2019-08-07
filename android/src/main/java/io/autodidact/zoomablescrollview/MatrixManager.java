@@ -117,7 +117,8 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         scrollTo(dst.left, dst.top, animated);
         float scale = clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
         RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
-        postScale(scale, absDst.centerX(), absDst.centerY());
+        setScale(scale, scale, absDst.centerX(), absDst.centerY());
+        mScale = scale;
         mView.postInvalidateOnAnimation();
     }
 

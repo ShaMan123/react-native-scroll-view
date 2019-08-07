@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 
 import androidx.core.view.ViewCompat;
 
-public class GestureEventManager implements IGestureDetector.ScrollResponder {
+public class GestureEventManager {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private IGestureDetector combinedGestureDetector;
     private MatrixManager mMatrix;
@@ -57,66 +57,6 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
 
     public MeasureTransformedView getMeasuringHelper(){
         return mMatrix.getMeasuringHelper();
-    }
-
-    /**
-     *
-     * @param x relative to view
-     * @param y relative to view
-     * @param animated
-     */
-    @Override
-    public void scrollTo(float x, float y, boolean animated) {
-        RectF layoutRect = mMatrix.getAbsoluteLayoutRect();
-        RectF transformedRect = mMatrix.getTransformedRect();
-        layoutRect.offset(-x, -y);
-
-        scrollBy(transformedRect.left - layoutRect.left, transformedRect.top - layoutRect.top, animated);
-    }
-
-    @Override
-    public void scrollBy(float x, float y, boolean animated) {
-        PointF clamped = mMatrix.clampOffset(new PointF(-x, -y));
-        mMatrix.postTranslate(clamped.x ,clamped.y);
-        mView.postInvalidateOnAnimation();
-    }
-
-    @Override
-    public void scrollToEnd(boolean animated) {
-        RectF clippingRect = mMatrix.getClippingRect();
-        RectF layoutRect = mMatrix.getAbsoluteLayoutRect();
-        RectF transformedRect = mMatrix.getTransformedRect();
-
-        PointF relEnd = new PointF(transformedRect.width() - clippingRect.width(), transformedRect.height() - clippingRect.height());
-        layoutRect.offset(-relEnd.x, -relEnd.y);
-
-        float scrollX = mView.isHorizontal() ?
-                getMeasuringHelper().isRTL() ?
-                        transformedRect.left - layoutRect.left :
-                        transformedRect.right - layoutRect.right :
-                        0;
-        float scrollY = mView.isHorizontal() ? 0 : transformedRect.top - layoutRect.top;
-        scrollBy(scrollX, scrollY, animated);
-    }
-
-    @Override
-    public void zoomToRect(float x, float y, float width, float height, boolean animated) {
-        zoomToRect(new RectF(x, y, x + width, y + height), animated);
-    }
-
-    @Override
-    public void zoomToRect(RectF dst, boolean animated) {
-        RectF src = mMatrix.getAbsoluteLayoutRect();
-        scrollTo(dst.left, dst.top, animated);
-        float scale = mMatrix.clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
-        RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
-        mMatrix.postScale(scale, absDst.centerX(), absDst.centerY());
-    }
-
-    @Override
-    public void flashScrollIndicators() {
-
-        //mView.postInvalidateOnAnimation();
     }
 
     public void onLayout(boolean changed, int l, int t, int r, int b) {
