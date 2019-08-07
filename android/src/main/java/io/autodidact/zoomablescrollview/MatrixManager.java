@@ -8,7 +8,7 @@ import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
 
-public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper, IGestureDetector.MesaureTransformedView {
+public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper, IGestureDetector.MesaureTransformedView, IGestureDetector.ScrollResponder {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
 
     protected RNZoomableScrollView mView;
@@ -49,15 +49,6 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         return mMeasurementProvider;
     }
 
-    public void zoomToRect(float x, float y, float width, float height, boolean animated){
-        RectF src = getAbsoluteLayoutRect();
-        RectF dst = new RectF(x, y, x + width, y + height);
-        reset();
-        float scale = clampScale(Math.min(src.width() / width, src.height() / height));
-        Log.d(TAG, "zoomToRect: " + src.width() / width + "   " + src.height() / height);
-        //preTranslate();
-        setScale(scale, scale, -x, -y);
-    }
 
     public void forceUpdateFromMatrix() {
         float[] values = new float[9];
@@ -67,7 +58,70 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         computeScroll();
     }
 
+    /**
+     * Scroll Adapter interface
+     *
+     */
+
+    /**
+     *
+     * @param x relative to view
+     * @param y relative to view
+     * @param animated
+     */
+    @Override
+    public void scrollTo(float x, float y, boolean animated) {
+        RectF layoutRect = getAbsoluteLayoutRect();
+        RectF transformedRect = getTransformedRect();
+        layoutRect.offset(-x, -y);
+
+        scrollBy(transformedRect.left - layoutRect.left, transformedRect.top - layoutRect.top, animated);
+    }
+
+    @Override
+    public void scrollBy(float x, float y, boolean animated) {
+        PointF clamped = clampOffset(new PointF(-x, -y));
+        postTranslate(clamped.x ,clamped.y);
+        mView.postInvalidateOnAnimation();
+    }
+
+    @Override
+    public void scrollToEnd(boolean animated) {
+        RectF clippingRect = getClippingRect();
+        RectF layoutRect = getAbsoluteLayoutRect();
+        RectF transformedRect = getTransformedRect();
+
+        PointF relEnd = new PointF(
+                transformedRect.width() - clippingRect.width(),
+                transformedRect.height() - clippingRect.height()
+        );
+        layoutRect.offset(-relEnd.x, -relEnd.y);
+
+        float scrollX = mView.isHorizontal() ?
+                getMeasuringHelper().isRTL() ?
+                        transformedRect.left - layoutRect.left :
+                        transformedRect.right - layoutRect.right :
+                0;
+        float scrollY = mView.isHorizontal() ? 0 : transformedRect.top - layoutRect.top;
+        scrollBy(scrollX, scrollY, animated);
+    }
+
+    @Override
+    public void zoomToRect(float x, float y, float width, float height, boolean animated) {
+        zoomToRect(new RectF(x, y, x + width, y + height), animated);
+    }
+
+    @Override
     public void zoomToRect(RectF dst, boolean animated) {
+        RectF src = getAbsoluteLayoutRect();
+        scrollTo(dst.left, dst.top, animated);
+        float scale = clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
+        RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
+        postScale(scale, absDst.centerX(), absDst.centerY());
+        mView.postInvalidateOnAnimation();
+    }
+
+    public void zoomToRect1(RectF dst, boolean animated) {
         RectF src = getClippingRect();
         src.offsetTo(0, 0);
         Matrix matrix = new Matrix();
@@ -85,12 +139,10 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         forceUpdateFromMatrix();
     }
 
-    public Matrix clampMatrix(Matrix src){
-        return src;
-    }
+    @Override
+    public void flashScrollIndicators() {
 
-    public static float clamp(float min, float value, float max){
-        return Math.max(min, Math.min(value, max));
+        //mView.postInvalidateOnAnimation();
     }
 
     /**
@@ -329,7 +381,7 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         return out;
     }
 
-    public boolean isOverScrolling() {
+    public RectB isOverScrolling() {
         RectB mIsOverscrolling = new RectB(false);
         RectF clippingRect = getClippingRect();
         RectF transformed = getTransformedRect();
@@ -342,55 +394,13 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         if(transformed.top < clippingRect.top && !hIsContained) mIsOverscrolling.top = true;
         if(transformed.bottom < clippingRect.bottom && !hIsContained) mIsOverscrolling.bottom = true;
 
-        return mIsOverscrolling.some();
+        return mIsOverscrolling;
     }
 
-    public boolean scrollTo(PointF scrollTo) {
-        RectF transformedRect = getTransformedRect();
-        MatrixManager testMatrix = test();
-        RectF out = new RectF();
 
-        PointF start = getTopLeftMaxDisplacement();
-        PointF clamped = new PointF(Math.min(-start.x, scrollTo.x), Math.min(-start.y, scrollTo.y));
 
-        out.set(transformedRect);
-        out.offsetTo(clamped.x, clamped.y);
 
-        postTranslate(-start.x, -start.y);
-        postTranslate(-out.left, -out.top);
-
-        return clamped.equals(scrollTo);
-    }
-
-    public boolean scrollBy(PointF scrollBy) {
-        PointF p = new PointF();
-        p.set(scrollBy);
-        p.negate();
-        PointF out = clampOffset(p);
-        postTranslate(out.x, out.y);
-        return out.length() > 0;
-    }
-
-    public void scrollToEnd(boolean horizontal) {
-        RectF layoutRect = getAbsoluteLayoutRect();
-        RectF clippingRect = getClippingRect();
-        layoutRect.inset(clippingRect.width() * 0.5f, clippingRect.height() * 0.5f);
-        layoutRect.offsetTo(0, 0);
-        Log.d(TAG, "scrollToEnd: " + layoutRect);
-        scrollTo(new PointF(layoutRect.right, layoutRect.bottom));
-        /*
-        PointF p = getBottomRightMaxDisplacement();
-        p.negate();
-        if(horizontal){
-            p.x = 0;
-        }
-        else {
-            p.y = 0;
-            if(mMeasurementProvider.getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL){
-                p.negate();
-            }
-        }
-        scrollBy(p);
-        */
+    public static float clamp(float min, float value, float max){
+        return Math.max(min, Math.min(value, max));
     }
 }

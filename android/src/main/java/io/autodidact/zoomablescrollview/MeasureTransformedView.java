@@ -16,9 +16,10 @@ public class MeasureTransformedView {
     private boolean mInitialized = false;
     private int mLayoutDirection;
     private RNZoomableScrollView mView;
+    MeasureUtility measureUtility;
 
     MeasureTransformedView(RNZoomableScrollView view){
-        MeasureUtility measureUtility = new MeasureUtility(view.getReactContext());
+        measureUtility = new MeasureUtility(view.getReactContext());
         mViewPort = measureUtility.getUsableViewPort();
         mLayoutDirection = measureUtility.getLayoutDirection();
         mView = view;
@@ -37,7 +38,11 @@ public class MeasureTransformedView {
     }
 
     public int getLayoutDirection(){
-        return mLayoutDirection;
+        return measureUtility.getLayoutDirection();
+    }
+
+    public boolean isRTL() {
+        return measureUtility.isRTL();
     }
 
     public void onLayout(boolean changed, int l, int t, int r, int b) {

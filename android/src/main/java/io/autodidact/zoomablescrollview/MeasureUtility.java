@@ -20,9 +20,11 @@ public class MeasureUtility {
     }
 
     public int getLayoutDirection(){
-        return I18nUtil.getInstance().isRTL(mContext)
-                ? ViewCompat.LAYOUT_DIRECTION_RTL
-                : ViewCompat.LAYOUT_DIRECTION_LTR;
+        return isRTL() ? ViewCompat.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR;
+    }
+
+    public boolean isRTL(){
+        return I18nUtil.getInstance().isRTL(mContext);
     }
 
     public Rect getUsableViewPort(){

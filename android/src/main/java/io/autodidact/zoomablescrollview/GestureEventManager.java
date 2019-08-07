@@ -91,7 +91,7 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
         layoutRect.offset(-relEnd.x, -relEnd.y);
 
         float scrollX = mView.isHorizontal() ?
-                getMeasuringHelper().getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL ?
+                getMeasuringHelper().isRTL() ?
                         transformedRect.left - layoutRect.left :
                         transformedRect.right - layoutRect.right :
                         0;
@@ -101,15 +101,16 @@ public class GestureEventManager implements IGestureDetector.ScrollResponder {
 
     @Override
     public void zoomToRect(float x, float y, float width, float height, boolean animated) {
-        //mMatrix.zoomToRect(x, y, width, height, animated);
-        //mView.postInvalidateOnAnimation();
         zoomToRect(new RectF(x, y, x + width, y + height), animated);
     }
 
     @Override
     public void zoomToRect(RectF dst, boolean animated) {
-        mMatrix.zoomToRect(dst, animated);
-        mView.postInvalidateOnAnimation();
+        RectF src = mMatrix.getAbsoluteLayoutRect();
+        scrollTo(dst.left, dst.top, animated);
+        float scale = mMatrix.clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
+        RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
+        mMatrix.postScale(scale, absDst.centerX(), absDst.centerY());
     }
 
     @Override
