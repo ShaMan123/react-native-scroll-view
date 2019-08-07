@@ -73,7 +73,7 @@ public class MeasureTransformedView {
 
     public RectF getClippingRect() {
         validateState();
-        RectF mRect = fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
+        Rect mRect = mClipLayout;//fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
 
         RectF out = new RectF(
                 Math.max(mViewPort.left, mRect.left),

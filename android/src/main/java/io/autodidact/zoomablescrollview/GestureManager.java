@@ -59,6 +59,18 @@ public class GestureManager {
         Events
      */
 
+    public boolean canScroll(){
+        return mMatrix.canScroll(mVelocityHelper.getVelocity());
+    }
+
+    public boolean isPointerInBounds(MotionEvent ev){
+        return getMeasuringHelper().getClippingRect().contains(ev.getX(), ev.getY());
+    }
+
+    public boolean requestDisallowInterceptTouchEvent(MotionEvent ev) {
+        return canScroll() && isPointerInBounds(ev);
+    }
+
     public void onLayout(boolean changed, int l, int t, int r, int b) {
         /*
         RectF clip;
@@ -89,16 +101,13 @@ public class GestureManager {
         }
     }
 
-    public boolean canScroll(){
-        return mMatrix.canScroll(mVelocityHelper.getVelocity());
-    }
-
-    public boolean requestDisallowInterceptTouchEvent() {
-        return canScroll();
+    public boolean onInterceptTouchEvent(MotionEvent event){
+        return isPointerInBounds(event);
     }
 
     public boolean onTouchEvent(MotionEvent event) {
         mVelocityHelper.onTouchEvent(event);
+        if(!isPointerInBounds(event)) return false;
         mAppliedChange = false;
         mAnimationBuilder = getMatrix().getAnimationBuilder(true);
 

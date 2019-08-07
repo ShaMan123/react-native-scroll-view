@@ -1,12 +1,14 @@
 package io.autodidact.zoomablescrollview;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.views.view.ReactViewGroup;
 
-public class RNZoomableScrollView extends ViewGroup {
+public class RNZoomableScrollView extends ReactViewGroup {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private GestureManager mGestureManager;
     private ThemedReactContext mContext;
@@ -16,8 +18,8 @@ public class RNZoomableScrollView extends ViewGroup {
         super(context);
         mContext = context;
         mGestureManager = new GestureManager(this);
-        setClipChildren(true);
-        //setRemoveClippedSubviews(false);
+        //setClipChildren(true);
+        setRemoveClippedSubviews(false);
     }
 
     public ThemedReactContext getReactContext() {
@@ -40,21 +42,21 @@ public class RNZoomableScrollView extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        //super.onLayout(changed, l, t, r, b);
+        super.onLayout(changed, l, t, r, b);
         mGestureManager.onLayout(changed, l, t, r, b);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         super.onInterceptTouchEvent(ev);
-        return true;
+        return mGestureManager.isPointerInBounds(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         //if(super.onTouchEvent(event)) return true;
-        boolean disallowInterceptTouchEvent = mGestureManager.requestDisallowInterceptTouchEvent();
+        boolean disallowInterceptTouchEvent = mGestureManager.requestDisallowInterceptTouchEvent(event);
         requestDisallowInterceptTouchEvent(disallowInterceptTouchEvent);
         mGestureManager.onTouchEvent(event);
         postInvalidateOnAnimation();
