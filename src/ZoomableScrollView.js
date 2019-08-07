@@ -200,7 +200,7 @@ export default class ScrollView extends Component {
             >
                 <View
                     collapsable={false}
-                    style={[contentContainerStyle, styles.noTransform, { transform: [{scale:2}]}]}
+                    style={[contentContainerStyle, styles.noTransform]}
                 /*style={{ flexWrap: 'wrap', flexDirection: 'row' }}*/
                 >
                     {this.props.children}
