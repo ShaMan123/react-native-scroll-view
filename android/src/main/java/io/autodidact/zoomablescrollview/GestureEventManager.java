@@ -83,13 +83,18 @@ public class GestureEventManager {
         canvas.drawRect(rel, p);
     }
 
-    public boolean requestDisallowInterceptTouchEvent() {
+    public boolean canScroll(){
         return mMatrix.canScroll(mVelocityHelper.getVelocity());
+    }
+
+    public boolean requestDisallowInterceptTouchEvent() {
+        return canScroll();
     }
 
     public boolean onTouchEvent(MotionEvent event) {
         mVelocityHelper.onTouchEvent(event);
         mAppliedChange = false;
+
         if(scaleGestureHelper.onTouchEvent(event)) {
             translateGestureHelper.resetTouchPointers();
             mAppliedChange = true;

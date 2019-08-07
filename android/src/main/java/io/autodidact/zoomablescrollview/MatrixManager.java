@@ -1,5 +1,6 @@
 package io.autodidact.zoomablescrollview;
 
+import android.graphics.Interpolator;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -7,6 +8,10 @@ import android.graphics.RectF;
 import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.Transformation;
 
 public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelper, IGestureDetector.TranslateHelper, IGestureDetector.MesaureTransformedView, IGestureDetector.ScrollResponder {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -80,9 +85,12 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     @Override
     public void scrollBy(float x, float y, boolean animated) {
+        Matrix stale = new Matrix(this);
         PointF clamped = clampOffset(new PointF(-x, -y));
         postTranslate(clamped.x ,clamped.y);
-        mView.postInvalidateOnAnimation();
+        MatrixAnimation animation = new MatrixAnimation(stale, this);
+        mView.startAnimation(animation);
+        //mView.postInvalidateOnAnimation();
     }
 
     @Override
@@ -113,12 +121,17 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     @Override
     public void zoomToRect(RectF dst, boolean animated) {
+        Matrix stale = new Matrix(this);
         RectF src = getAbsoluteLayoutRect();
         scrollTo(dst.left, dst.top, animated);
         float scale = clampScale(Math.min(src.width() / dst.width(), src.height() / dst.height()));
         RectF absDst = getMeasuringHelper().fromRelativeToAbsolute(dst);
         setScale(scale, scale, absDst.centerX(), absDst.centerY());
         mScale = scale;
+
+        MatrixAnimation animation = new MatrixAnimation(stale, this);
+        mView.startAnimation(animation);
+
         mView.postInvalidateOnAnimation();
     }
 
@@ -403,5 +416,55 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
 
     public static float clamp(float min, float value, float max){
         return Math.max(min, Math.min(value, max));
+    }
+
+    public static class MatrixAnimation extends Animation {
+        //  https://stackoverflow.com/questions/33712067/android-how-to-animation-move-the-view-by-using-a-matrix
+        //  http://android-er.blogspot.com/2012/10/create-animation-using-matrix.html
+        private Matrix startMatrix;
+        private Matrix endMatrix;
+        private Matrix tMatrix;
+        private Matrix mWorking = new Matrix();
+        private float[] a = new float[9];
+        private float[] b = new float[9];
+        private float[] c = new float[9];
+
+        MatrixAnimation(Matrix startMatrix, Matrix endMatrix){
+            this.startMatrix = startMatrix;
+            this.endMatrix = endMatrix;
+            Matrix out = new Matrix();
+            tMatrix = new Matrix();
+            startMatrix.invert(out);
+            Log.d(TAG, "MatrixAnimation: startMatrix"+ out);
+            tMatrix.preConcat(out);
+            tMatrix.postConcat(endMatrix);
+
+            startMatrix.getValues(a);
+            tMatrix.getValues(b);
+
+            setDuration(300);
+            setFillAfter(true);
+            setInterpolator(new AccelerateDecelerateInterpolator());
+            Log.d(TAG, "MatrixAnimation: " + tMatrix);
+
+        }
+
+
+
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            super.applyTransformation(interpolatedTime, t);
+
+            final Matrix matrix = t.getMatrix();
+            for (int i = 0; i < 9; i++) {
+                c[i] = b[i] * interpolatedTime;
+                Log.d(TAG, "c: " + i + " " + c[i]);
+            }
+            Log.d(TAG, "applyTransformation: " + interpolatedTime);
+            mWorking.setValues(c);
+
+            matrix.preConcat(startMatrix);
+            matrix.postConcat(mWorking);
+        }
     }
 }
