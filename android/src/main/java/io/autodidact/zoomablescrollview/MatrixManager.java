@@ -428,6 +428,11 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         private float[] a = new float[9];
         private float[] b = new float[9];
         private float[] c = new float[9];
+        private float[] t1;
+        private float[] t2;
+
+        private float sFactor;
+        private float tFactor;
 
         MatrixAnimation(Matrix startMatrix, Matrix endMatrix){
             this.startMatrix = startMatrix;
@@ -436,11 +441,17 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
             tMatrix = new Matrix();
             startMatrix.invert(out);
             Log.d(TAG, "MatrixAnimation: startMatrix"+ out);
-            tMatrix.preConcat(out);
+            tMatrix.postConcat(out);
             tMatrix.postConcat(endMatrix);
 
             startMatrix.getValues(a);
-            tMatrix.getValues(b);
+            endMatrix.getValues(b);
+
+            t1  = new float[]{a[Matrix.MTRANS_X], a[Matrix.MTRANS_Y], a[Matrix.MSCALE_X], 1};
+            t2  = new float[]{b[Matrix.MTRANS_X], b[Matrix.MTRANS_Y], b[Matrix.MSCALE_X], 1};
+
+            //tMatrix.setPolyToPoly(t2, 0, t1, 0, 3);
+
 
             setDuration(300);
             setFillAfter(true);
@@ -454,17 +465,10 @@ public class MatrixManager extends Matrix implements IGestureDetector.ScaleHelpe
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
             super.applyTransformation(interpolatedTime, t);
-
             final Matrix matrix = t.getMatrix();
-            for (int i = 0; i < 9; i++) {
-                c[i] = b[i] * interpolatedTime;
-                Log.d(TAG, "c: " + i + " " + c[i]);
-            }
-            Log.d(TAG, "applyTransformation: " + interpolatedTime);
-            mWorking.setValues(c);
-
-            matrix.preConcat(startMatrix);
-            matrix.postConcat(mWorking);
+            matrix.postScale(t1[2], t1[2]);
+            matrix.postScale(t2[2] * interpolatedTime / t1[2] + 1 - interpolatedTime, t2[2] * interpolatedTime / t1[2] + 1 - interpolatedTime);
+            matrix.postTranslate((t2[0] - t1[0]) * interpolatedTime + t1[0], (t2[1] - t1[1]) * interpolatedTime + t1[1]);
         }
     }
 }
