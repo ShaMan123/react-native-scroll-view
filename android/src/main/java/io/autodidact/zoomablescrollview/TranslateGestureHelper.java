@@ -4,7 +4,7 @@ import android.graphics.PointF;
 import android.util.Log;
 import android.view.MotionEvent;
 
-public class TranslateGestureHelper implements GestureEventData.Displacement {
+public class TranslateGestureHelper {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
     private MatrixManager matrix;
 
@@ -46,11 +46,11 @@ public class TranslateGestureHelper implements GestureEventData.Displacement {
     }
 
     public boolean isOffsettingHorizontally(){
-        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() < DEGREE_BORDER;
+        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() < DEGREE_BORDER && Math.abs(mPersistEventTotalTranslation.x) > 0;
     }
 
     public boolean isOffsettingVertically(){
-        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() > 90 - DEGREE_BORDER;
+        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() > 90 - DEGREE_BORDER && Math.abs(mPersistEventTotalTranslation.y) > 0;
     }
 
     /**
