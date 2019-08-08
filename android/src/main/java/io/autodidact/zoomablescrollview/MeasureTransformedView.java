@@ -57,7 +57,7 @@ public class MeasureTransformedView {
         mInitialized = true;
 
         if(BuildConfig.DEBUG){
-            Log.d(TAG, "onLayout: clip " + mClipLayout + ", layout " + mLayout);
+            //Log.d(TAG, "onLayout: clip " + mClipLayout + ", layout " + mLayout);
         }
     }
 
@@ -78,7 +78,7 @@ public class MeasureTransformedView {
         validateState();
         RectF rect = new RectF(mLayout);
         rect.offsetTo(0, 0);
-        return rect;  //return fromRelativeToViewPortToAbsolute(new RectF(mLayout));
+        return rect;
     }
 
     /**
@@ -88,21 +88,9 @@ public class MeasureTransformedView {
      */
     public RectF getClippingRect() {
         validateState();
-        //return fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
         RectF rect = new RectF(mClipLayout);
         rect.offsetTo(0, 0);
         return new RectF(rect);
-        /*
-        RectF mRect =fromRelativeToViewPortToAbsolute(new RectF(mClipLayout));
-
-        RectF out = new RectF(
-                Math.max(mViewPort.left, mRect.left),
-                Math.max(mViewPort.top, mRect.top),
-                Math.min(mViewPort.right, mRect.right),
-                Math.min(mViewPort.bottom, mRect.bottom)
-        );
-        return out;
-        */
     }
 
     @Deprecated
