@@ -1,12 +1,8 @@
 package io.autodidact.zoomablescrollview;
 
-import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
-
-import androidx.core.view.ViewCompat;
 
 public class TranslateGestureHelper implements GestureEventData.Displacement {
     private static final String TAG = RNZoomableScrollView.class.getSimpleName();
@@ -22,6 +18,49 @@ public class TranslateGestureHelper implements GestureEventData.Displacement {
     private boolean mAppliedChange;
     private boolean mResetPrevPointer = false;
 
+    private PointF mMovement = new PointF();
+    private PointF mTranslation = new PointF();
+    private PointF mPersistEventTotalMovement = new PointF();
+    private PointF mPersistEventTotalTranslation = new PointF();
+
+    public static float DEGREE_BORDER = 15;
+
+    public static double fromPointToDegrees(PointF p){
+        return p.x == 0 ? 0 : Math.atan(p.y / p.x) * 180 / Math.PI;
+    }
+
+    public double degree(){
+        return Math.abs(fromPointToDegrees(mPersistEventTotalMovement));
+    }
+
+    public double offsetDegree(){
+        return Math.abs(fromPointToDegrees(mPersistEventTotalTranslation));
+    }
+
+    public boolean isHorizontal(){
+        return degree() < DEGREE_BORDER;
+    }
+
+    public boolean isVertical(){
+        return degree() > 90 - DEGREE_BORDER;
+    }
+
+    public boolean isOffsettingHorizontally(){
+        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() < DEGREE_BORDER;
+    }
+
+    public boolean isOffsettingVertically(){
+        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() > 90 - DEGREE_BORDER;
+    }
+
+    /**
+     *
+     * @return whether the event's translation is similar to it's movement, good to understand if the event should be handled
+     */
+    public boolean isConsistent(){
+        return (isHorizontal() && isOffsettingHorizontally()) || (isVertical() && isOffsettingVertically());
+    }
+
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getActionMasked();
         int index = ev.getActionIndex();
@@ -31,13 +70,21 @@ public class TranslateGestureHelper implements GestureEventData.Displacement {
 
         pointer.set(ev.getX(index), ev.getY(index));
 
+        if(action == MotionEvent.ACTION_DOWN){
+            mPersistEventTotalMovement.set(0, 0);
+            mPersistEventTotalTranslation.set(0, 0);
+        }
+
         if(mResetPrevPointer || action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL || prevPointer == null || prevPointerId != pointerId) {
             if(prevPointer == null) prevPointer = new PointF();
             prevPointer.set(pointer);
             if(mResetPrevPointer) mResetPrevPointer = false;
         }
 
-        mAppliedChange = matrix.postTranslate(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
+        mMovement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
+        mAppliedChange = matrix.postTranslate(mTranslation, mMovement);
+        mPersistEventTotalMovement.offset(mMovement.x, mMovement.y);
+        mPersistEventTotalTranslation.offset(mTranslation.x, mTranslation.y);
 
         prevPointer.set(pointer);
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL) {
