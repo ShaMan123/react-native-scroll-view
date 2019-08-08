@@ -194,9 +194,6 @@ export default class ScrollView extends Component {
                 {...this.props}
                 style={[style, styles.noTransform]}
                 ref={this._setRef}
-                onScroll={(e) => console.log(e.nativeEvent)}
-                onScrollBeginDrag={(e) => console.log('begin', e.nativeEvent)}
-                onScrollEndDrag={(e) => console.log('end', e.nativeEvent)}
             >
                 <View
                     collapsable={false}
