@@ -6,15 +6,19 @@ import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
+import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.BaseViewManager;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.scroll.ReactScrollViewManager;
+import com.facebook.react.views.scroll.ScrollEventType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -68,6 +72,7 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
     @Override
     public void setTransform(final @Nonnull RNZoomableScrollView view, final @Nullable ReadableArray matrix) {
         //view.getGestureManager().tryPostViewMatrixConcat(matrix);
+        super.setTransform(view, matrix);
     }
 
     @Nonnull
@@ -102,10 +107,35 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
         view.setHorizontal(value);
     }
 
-    @ReactProp(name = "dispatchScrollEvents", defaultBoolean = true)
-    public void setEventType(RNZoomableScrollView view, boolean value){
-        //view.setDispatchScrollEvents(value);
+    private boolean isCallbackProp(Dynamic value){
+        boolean out = value != null || value.asBoolean() == true;
+        value.recycle();
+        return out;
+    }
 
+    @ReactProp(name = "onScroll", defaultBoolean = false)
+    public void setEmitScrollEvent(RNZoomableScrollView view, Dynamic value){
+        view.getGestureManager().requestEvent(ScrollEventType.SCROLL, isCallbackProp(value));
+    }
+
+    @ReactProp(name = "onScrollBeginDrag", defaultBoolean = false)
+    public void setEmitScrollBeginDragEvent(RNZoomableScrollView view, Dynamic value){
+        view.getGestureManager().requestEvent(ScrollEventType.BEGIN_DRAG, isCallbackProp(value));
+    }
+
+    @ReactProp(name = "onScrollEndDrag", defaultBoolean = false)
+    public void setEmitScrollEndDragEvent(RNZoomableScrollView view, Dynamic value){
+        view.getGestureManager().requestEvent(ScrollEventType.END_DRAG, isCallbackProp(value));
+    }
+
+    @ReactProp(name = "onMomentumScrollBegin", defaultBoolean = false)
+    public void setEmitScrollMomentumBeginEvent(RNZoomableScrollView view, Dynamic value){
+        view.getGestureManager().requestEvent(ScrollEventType.MOMENTUM_BEGIN, isCallbackProp(value));
+    }
+
+    @ReactProp(name = "onMomentumScrollEnd", defaultBoolean = false)
+    public void setEmitScrollMomentumEndEvent(RNZoomableScrollView view, Dynamic value){
+        view.getGestureManager().requestEvent(ScrollEventType.MOMENTUM_END, isCallbackProp(value));
     }
 
     @IntDef({Commands.SCROLL_TO, Commands.SCROLL_BY, Commands.ZOOM_TO_RECT, Commands.SCROLL_TO_END, Commands.FLASH_SCROLL_INDICATORS})
@@ -124,7 +154,7 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
         return MapBuilder.of(
                 "scrollTo", Commands.SCROLL_TO,
                 "scrollBy", Commands.SCROLL_BY,
-                "scrollToRect", Commands.ZOOM_TO_RECT,
+                "zoomToRect", Commands.ZOOM_TO_RECT,
                 "scrollToEnd", Commands.SCROLL_TO_END,
                 "flashScrollIndicators", Commands.FLASH_SCROLL_INDICATORS
         );
@@ -178,10 +208,7 @@ public class RNZoomableScrollViewManager extends ViewGroupManager<RNZoomableScro
     @Override
     public @Nullable
     Map getExportedCustomDirectEventTypeConstants() {
-        return MapBuilder.of(
-                Event.EventNames.ON_SCALE, MapBuilder.of("registrationName", Event.EventNames.ON_SCALE),
-                Event.EventNames.ON_SCALE_BEGIN, MapBuilder.of("registrationName", Event.EventNames.ON_SCALE_BEGIN),
-                Event.EventNames.ON_SCALE_END, MapBuilder.of("registrationName", Event.EventNames.ON_SCALE_END)
-        );
+        //new ReactScrollViewManager().getExportedCustomDirectEventTypeConstants();
+        return ReactScrollViewManager.createExportedCustomDirectEventTypeConstants();
     }
 }
