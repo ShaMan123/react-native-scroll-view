@@ -196,6 +196,7 @@ export default class ScrollView extends Component {
                 ref={this._setRef}
             >
                 <View
+                    pointerEvents="box-none"
                     collapsable={false}
                     style={[contentContainerStyle, styles.noTransform]}
                 /*style={{ flexWrap: 'wrap', flexDirection: 'row' }}*/
