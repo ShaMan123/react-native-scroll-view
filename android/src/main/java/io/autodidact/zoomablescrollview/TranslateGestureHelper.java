@@ -21,7 +21,9 @@ public class TranslateGestureHelper {
     private PointF mMovement = new PointF();
     private PointF mTranslation = new PointF();
     private PointF mPersistEventTotalMovement = new PointF();
+    private PointF mPersistEventTotalAbsMovement = new PointF();
     private PointF mPersistEventTotalTranslation = new PointF();
+    private boolean mPersistEventAppliedChange;
 
     public static float DEGREE_BORDER = 15;
 
@@ -46,19 +48,33 @@ public class TranslateGestureHelper {
     }
 
     public boolean isOffsettingHorizontally(){
-        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() < DEGREE_BORDER && Math.abs(mPersistEventTotalTranslation.x) > 0;
+        return offsetDegree() < DEGREE_BORDER && Math.abs(mPersistEventTotalTranslation.x) > 0;
     }
 
     public boolean isOffsettingVertically(){
-        return mPersistEventTotalTranslation.length() > 0 && offsetDegree() > 90 - DEGREE_BORDER && Math.abs(mPersistEventTotalTranslation.y) > 0;
+        return offsetDegree() > 90 - DEGREE_BORDER && Math.abs(mPersistEventTotalTranslation.y) > 0;
     }
 
     /**
      *
+     * use in combination with {@link #isInConsistent()}
      * @return whether the event's translation is similar to it's movement, good to understand if the event should be handled
      */
     public boolean isConsistent(){
         return (isHorizontal() && isOffsettingHorizontally()) || (isVertical() && isOffsettingVertically());
+    }
+
+    /**
+     *
+     * use in combination with {@link #isConsistent()}
+     * @return whether the event is moving around inconsistently
+     */
+    public boolean isInConsistent(){
+        return mPersistEventTotalAbsMovement.length() > mPersistEventTotalMovement.length();
+    }
+
+    public boolean requestDisallowInterceptTouchEvent() {
+        return isConsistent() || isInConsistent();
     }
 
     public boolean onTouchEvent(MotionEvent ev) {
@@ -72,7 +88,9 @@ public class TranslateGestureHelper {
 
         if(action == MotionEvent.ACTION_DOWN){
             mPersistEventTotalMovement.set(0, 0);
+            mPersistEventTotalAbsMovement.set(0, 0);
             mPersistEventTotalTranslation.set(0, 0);
+            mPersistEventAppliedChange = false;
         }
 
         if(mResetPrevPointer || action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL || prevPointer == null || prevPointerId != pointerId) {
@@ -84,12 +102,15 @@ public class TranslateGestureHelper {
         mMovement.set(pointer.x - prevPointer.x, pointer.y - prevPointer.y);
         mAppliedChange = matrix.postTranslate(mTranslation, mMovement);
         mPersistEventTotalMovement.offset(mMovement.x, mMovement.y);
+        mPersistEventTotalAbsMovement.offset(Math.abs(mMovement.x), Math.abs(mMovement.y));
         mPersistEventTotalTranslation.offset(mTranslation.x, mTranslation.y);
 
         prevPointer.set(pointer);
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL) {
             prevPointer = null;
         }
+
+        if (mAppliedChange) mPersistEventAppliedChange = true;
 
         return mAppliedChange;
     }
