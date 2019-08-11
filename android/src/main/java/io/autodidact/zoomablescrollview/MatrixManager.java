@@ -393,8 +393,16 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
 
     @Override
     public boolean postTranslate(float dx, float dy) {
-        PointF t = clampOffset(new PointF(dx, dy));
-        return super.postTranslate(t.x, t.y) && t.length() > 0;
+        return postTranslate(new PointF(dx, dy));
+    }
+
+    public boolean postTranslate(PointF src) {
+        return postTranslate(new PointF(), src);
+    }
+
+    public boolean postTranslate(PointF out, PointF src){
+        out.set(clampOffset(new PointF(src.x, src.y)));
+        return super.postTranslate(out.x, out.y) && out.length() > 0;
     }
 
     @Override
