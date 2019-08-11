@@ -46,29 +46,11 @@ public interface IGesture {
     interface ScrollResponder {
         void scrollTo(float x, float y, boolean animated);
         void scrollBy(float x, float y, boolean animated);
-        //void scrollToStart(boolean animated);
         void scrollToEnd(boolean animated);
-        //void scrollToTop(boolean animated);
-        //void scrollToBottom(boolean animated);
-        //void scrollToLeft(boolean animated);
-        //void scrollToRight(boolean animated);
-
         void zoomToRect(float x, float y, float width, float height, boolean animated);
         void zoomToRect(RectF rect, boolean animated);
         void flashScrollIndicators();
     }
-
-    interface GestureHelper extends OnMatrixChangeListener {
-
-
-        //
-
-        public void requestDisallowInterceptTouchEvent();
-
-
-    }
-
-
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({GestureDetectors.COMBINED_GESTURE_DETECTOR, GestureDetectors.MATRIX_GESTURE_DETECTOR})
@@ -77,23 +59,4 @@ public interface IGesture {
         int MATRIX_GESTURE_DETECTOR = 1;
     }
 
-/*
-    class ScrollDirection {
-        public static @interface Directions {
-            Point LEFT = new Point(-1, 0);
-            Point RIGHT = new Point(1, 0);
-            Point UP = new Point(0, -1);
-            Point DOWN = new Point(0, 1);
-        }
-
-        static Point merge(@Directions Point x, @Directions Point y){
-            return new Point(x.x, y.y);
-        }
-
-        void g(){
-            Directions.
-        }
-    }
-
-*/
 }
