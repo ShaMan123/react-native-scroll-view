@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 
 import com.autodidact.BuildConfig;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.views.scroll.ScrollEventType;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +26,7 @@ public class GestureManager {
     private VelocityHelper mVelocityHelper;
     private MatrixManager.MatrixAnimationBuilder mAnimationBuilder;
     private boolean mInterceptedEvent;
+    private ScrollEventAdapter.ScrollEventManager scrollEventManager;
 
     GestureManager(RNZoomableScrollView view){
         mMatrix = new MatrixManager(view);
@@ -32,6 +34,7 @@ public class GestureManager {
         scaleGestureHelper = new ScaleGestureHelper(view.getReactContext(), mMatrix);
         translateGestureHelper = new TranslateGestureHelper(mMatrix);
         mVelocityHelper = new VelocityHelper();
+        scrollEventManager = new ScrollEventAdapter.ScrollEventManager();
     }
 
     /*
@@ -64,6 +67,10 @@ public class GestureManager {
     /*
         Events
      */
+
+    public void requestEvent(ScrollEventType eventType, boolean isRequested){
+        scrollEventManager.setRequested(eventType, isRequested);
+    }
 
     public boolean canScroll(){
         return mMatrix.canScroll(mVelocityHelper.getVelocity());
