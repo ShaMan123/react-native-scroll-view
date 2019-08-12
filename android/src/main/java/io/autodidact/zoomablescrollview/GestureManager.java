@@ -4,13 +4,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 
 import com.autodidact.BuildConfig;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.views.scroll.ScrollEventType;
 
 import javax.annotation.Nullable;
@@ -22,11 +25,12 @@ public class GestureManager {
     private RNZoomableScrollView mView;
     private ScaleGestureHelper scaleGestureHelper;
     private TranslateGestureHelper translateGestureHelper;
-    private boolean mAppliedChange;
     private VelocityHelper mVelocityHelper;
     private MatrixManager.MatrixAnimationBuilder mAnimationBuilder;
-    private boolean mInterceptedEvent;
     private ScrollEventAdapter.ScrollEventManager scrollEventManager;
+
+    private boolean mAppliedChange;
+    private boolean mPersistEventAppliedChange;
 
     GestureManager(RNZoomableScrollView view){
         mMatrix = new MatrixManager(view);
@@ -72,6 +76,10 @@ public class GestureManager {
         scrollEventManager.setRequested(eventType, isRequested);
     }
 
+    /**
+     * computes offset/scroll in accordance to {@link #mVelocityHelper}
+     * @return true if can scroll in the {@link MotionEvent} direction, false otherwise
+     */
     public boolean canScroll(){
         return mMatrix.canScroll(mVelocityHelper.getVelocity());
     }
@@ -80,35 +88,18 @@ public class GestureManager {
         return getMeasuringHelper().getClippingRect().contains(ev.getX(), ev.getY());
     }
 
-    public boolean requestDisallowInterceptTouchEvent(MotionEvent ev) {
-        return canScroll();
+    public boolean requestDisallowInterceptTouchEvent() {
+        return canScroll() || (getTranslateGestureHelper().requestDisallowInterceptTouchEvent() && mPersistEventAppliedChange);
     }
 
     public void onLayout(boolean changed, int l, int t, int r, int b) {
-/*
-        RectF clip;
-        if(getMeasuringHelper().isInitialized()){
-            clip = getMeasuringHelper().getClippingRect();
-            mMatrix.preTranslate(-clip.left, -clip.top);
-        }
-*/
         getMeasuringHelper().onLayout(changed, l, t, r, b);
-        if(mMatrix.needsViewMatrixConcat()) mMatrix.postViewMatrix();
-/*
-        clip = getMeasuringHelper().getClippingRect();
-        mMatrix.preTranslate(clip.left, clip.top);
-*/
-    }
-
-
-
-    /**
-     * Tries to post {@link #mView} matrix to {@link #mMatrix}.
-     * In case layout has not occurred yet the request will be handled after layout by {@link #onLayout(boolean, int, int, int, int)}
-     * invoked after {@link RNZoomableScrollViewManager} received props
-     */
-    protected void tryPostViewMatrixConcat(@Nullable ReadableArray matrix){
-        mMatrix.requestViewMatrixConcat(matrix);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            Rect rect = new Rect(l, t, r, b);
+            rect.offsetTo(0, 0);
+            //mView.setClipBounds(rect);
+        }
+        if(mMatrix.needsViewMatrixConcat()) mMatrix.DEV_postViewMatrix();
     }
 
     protected void onDraw(Canvas canvas) {
@@ -124,18 +115,21 @@ public class GestureManager {
     }
 
     public boolean onInterceptTouchEvent(MotionEvent event){
-        if(!mInterceptedEvent){
-            mInterceptedEvent = !isPointerInBounds(event);
-        }
-        if(event.getActionMasked() == (MotionEvent.ACTION_UP | MotionEvent.ACTION_CANCEL)) mInterceptedEvent = false;
         return true;
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getActionMasked();
+        PointF p = new PointF(event.getX(), event.getY());
+        if(action == MotionEvent.ACTION_DOWN) {
+            mPersistEventAppliedChange = false;
+        }
+
         mVelocityHelper.onTouchEvent(event);
-        if(!isPointerInBounds(event)) return false;
+
         mAppliedChange = false;
         mAnimationBuilder = getMatrix().getAnimationBuilder(true);
+
 
         if(scaleGestureHelper.onTouchEvent(event)) {
             translateGestureHelper.resetTouchPointers();
@@ -149,63 +143,65 @@ public class GestureManager {
             mAnimationBuilder.run();
         }
 
-        if(event.getActionMasked() == (MotionEvent.ACTION_UP | MotionEvent.ACTION_CANCEL)) mInterceptedEvent = false;
+        if(mView.getParent() != null) mView.getParent().requestDisallowInterceptTouchEvent(requestDisallowInterceptTouchEvent());
 
-        return mAppliedChange;
+        emitEvent(event, false);
+
+        if (mAppliedChange) mPersistEventAppliedChange = true;
+
+        return mPersistEventAppliedChange;
     }
 
-     /*
+    private void emitEvent(MotionEvent event, boolean fake){
+        ScrollEventType eventType = ScrollEventAdapter.getScrollEventType(event, fake);
 
-    public boolean requestDisallowInterceptTouchEvent() {
-        return mRequestDisallowInterceptTouchEvent;
+        if(!scrollEventManager.isRequested(eventType)) return;
+
+        RectF clippingRect = getMeasuringHelper().getClippingRect();
+        RectF contentRect = getMeasuringHelper().getContentRect();
+        RectF transformedRect = mMatrix.getTransformedRect();
+        PointF velocity = mVelocityHelper.getVelocity();
+        float scale = mMatrix.getScale();
+
+        ScrollEventAdapter adapter = ScrollEventAdapter.obtain(
+                mView.getId(),
+                eventType,
+                (int) (-transformedRect.left),
+                (int) (-transformedRect.top),
+                velocity.x,
+                velocity.y,
+                (int) transformedRect.width(),
+                (int) transformedRect.height(),
+                (int) clippingRect.width(),
+                (int) clippingRect.height(),
+                scale
+        );
+
+        mView.getReactContext()
+                .getNativeModule(UIManagerModule.class)
+                .getEventDispatcher()
+                .dispatchEvent(adapter);
     }
 
+    /**
+     * Command handling from JS
+     *
+     */
 
-    private PointF down = new PointF();
-    private PointF crossThreshold = new PointF();
-    private boolean mDisallowIntercept = true;
-    Point direction = new Point();
-    private int minThreshold = 50;
-    private boolean mRequestDisallowInterceptTouchEvent = true;
 
-    public boolean onTouchEvent(MotionEvent event) {
-        mVelocityHelper.onTouchEvent(event);
-        int action = event.getActionMasked();
-        PointF pointer = new PointF(event.getX(), event.getY());
 
-        if(action == MotionEvent.ACTION_DOWN) down.set(event.getX(), event.getY());
-        boolean disallowIntercept = translateGestureHelper.canScroll(mVelocityHelper.getVelocity());
 
-        mAppliedChange = false;
-        if(scaleGestureHelper.onTouchEvent(event)) {
-            translateGestureHelper.resetTouchPointers();
-            mAppliedChange = true;
-        }
-        if(translateGestureHelper.onTouchEvent(event)) {
-            mAppliedChange = true;
-        }
 
-        if(!disallowIntercept && mDisallowIntercept) {
-            PointF velocity = mVelocityHelper.getVelocity();
-            direction = VelocityHelper.sign(velocity);
-            crossThreshold.set(pointer);
-            crossThreshold.offset(direction.x * minThreshold, direction.y * minThreshold);
-            //event.offsetLocation(down.x, down.y);
-            Matrix m = new Matrix();
-            m.setTranslate(-pointer.x, -pointer.y);
-            event.transform(m);
-        }
-        else if(!disallowIntercept) {
-            crossThreshold.offset(-pointer.x, -pointer.y);
-            mRequestDisallowInterceptTouchEvent = !VelocityHelper.sign(crossThreshold).equals(direction);
-        }
 
-        mDisallowIntercept = disallowIntercept;
-        if(action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
-            mRequestDisallowInterceptTouchEvent = true;
-        }
 
-        return mAppliedChange;
+
+
+    /**
+     * Tries to post {@link #mView} matrix to {@link #mMatrix}.
+     * In case layout has not occurred yet the request will be handled after layout by {@link #onLayout(boolean, int, int, int, int)}
+     * invoked after {@link RNZoomableScrollViewManager} received props
+     */
+    protected void tryPostViewMatrixConcat(@Nullable ReadableArray matrix){
+        mMatrix.DEV_requestViewMatrixConcat(matrix);
     }
-    */
 }

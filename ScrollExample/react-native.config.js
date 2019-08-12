@@ -3,19 +3,22 @@
 const path = require('path');
 
 module.exports = {
-    dependencies: {
-        'react-native-scroll-view': {
-            root: path.resolve(__dirname, '..'),
-        },
-        'react-native-gesture-handler': {
-            root: path.resolve(__dirname, './node_modules/react-native-gesture-handler'),
-            platforms: {
-                android: {
-                    packageImportPath: "import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;",
-                    packageInstance: "new RNGestureHandlerPackage()"
-                },
-                ios: null
-            },
-        },
+  dependencies: {
+    'react-native-scroll-view': {
+      root: path.resolve(__dirname, '..'),
     },
+    'react-native-gesture-handler': {
+      root: path.resolve(__dirname, './node_modules/react-native-gesture-handler'),
+      platforms: {
+        android: {
+          packageImportPath: "import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;",
+          packageInstance: "new RNGestureHandlerPackage()"
+        },
+        ios: null
+      },
+    },
+    'react-native-sketch-canvas': {
+      root: path.resolve(__dirname, '..', '../react-native-sketch-canvas')
+    }
+  },
 };

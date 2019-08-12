@@ -77,6 +77,10 @@ public class TranslateGestureHelper {
         return isConsistent() || isInConsistent();
     }
 
+    public boolean isChangeApplied() {
+        return mPersistEventAppliedChange;
+    }
+
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getActionMasked();
         int index = ev.getActionIndex();

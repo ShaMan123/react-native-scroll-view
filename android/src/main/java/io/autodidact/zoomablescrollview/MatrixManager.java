@@ -1,12 +1,16 @@
 package io.autodidact.zoomablescrollview;
 
+import android.animation.ObjectAnimator;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
-import android.view.View;
+
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.FlingAnimation;
 
 import com.facebook.react.bridge.ReadableArray;
 
@@ -27,13 +31,10 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     private boolean mAppliedChange;
     private boolean mDidInitScale = false;
 
-    private RectB canOffset = new RectB();
+    protected RectB canOffset = new RectB();
     private MeasureTransformedView mMeasurementProvider;
     private boolean mCenterContent = false;
 
-    /**
-     * Common
-     */
 
     MatrixManager(RNZoomableScrollView view){
         super();
@@ -60,20 +61,31 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         return mViewRequestsMatrixConcat;
     }
 
+
     private @Nullable ReadableArray matrixCSS;
-    public void requestViewMatrixConcat(@Nullable ReadableArray matrix) {
+
+    /**
+     * in developement
+     *
+     * @param matrix
+     */
+    public void DEV_requestViewMatrixConcat(@Nullable ReadableArray matrix) {
         matrixCSS = matrix;
         if(getMeasuringHelper().isInitialized()) {
-            postViewMatrix();
+            DEV_postViewMatrix();
         }
         else mViewRequestsMatrixConcat = true;
     }
 
-    protected void postViewMatrix(){
+    /**
+     * in developement
+     */
+    protected void DEV_postViewMatrix(){
+        /*
         MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(true);
         mViewRequestsMatrixConcat = false;
         RNZoomableScrollViewManager.tryHackSetTransform(mView, matrixCSS);
-        Log.d(TAG, "postViewMatrix: " + mView.getChildAt(0).getMatrix());
+        Log.d(TAG, "DEV_postViewMatrix: " + mView.getChildAt(0).getMatrix());
         if(mProccessedViewMatrix != null){
             Matrix invert = new Matrix();
             mProccessedViewMatrix.invert(invert);
@@ -86,18 +98,17 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         postMatrix(mProccessedViewMatrix);
         computeScroll();
         animationBuilder.run();
+        */
     }
-
+/*
     public void postMatrix(Matrix matrix){
-        super.postConcat(matrix);
-        /*
+        //super.postConcat(matrix);
         float[] values = new float[9];
         matrix.getValues(values);
         postScale((values[Matrix.MSCALE_X] + values[Matrix.MSCALE_X]) * 0.5f, 0, 0);
         postTranslate(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
-        */
     }
-
+*/
     public void forceUpdateFromMatrix() {
         float[] values = new float[9];
         getValues(values);
@@ -133,7 +144,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         MatrixAnimationBuilder animationBuilder = new MatrixAnimationBuilder(animated);
         postTranslate(-x, -y);
         animationBuilder.run();
-        //mView.postInvalidateOnAnimation();
+        mView.postInvalidateOnAnimation();
     }
 
     /**
@@ -178,11 +189,37 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
 
         animationBuilder.run();
 
-        //mView.postInvalidateOnAnimation();
+        mView.postInvalidateOnAnimation();
     }
 
     @Override
     public void flashScrollIndicators() {
+
+    }
+
+    public void fling(PointF velocity){
+        Log.d(TAG, "fling: " + velocity);
+
+        RectF tr = getTransformedRect();
+        //PointF tl = getTopLeftMaxDisplacement();
+        //PointF rb = getBottomRightMaxDisplacement();
+        FlingAnimation flingAnimX = new FlingAnimation(mView, DynamicAnimation.TRANSLATION_X)
+                // Sets the start velocity to -2000 (pixel/s)
+                .setStartVelocity(velocity.x *2000)
+                // Optional but recommended to set a reasonable min and max range for the animation.
+                // In this particular case, we set the min and max to -200 and 2000 respectively.
+                //.setMinValue(tl.x + tr.left).setMaxValue(rb.x + tr.right);
+                .setMinValue(-tr.width()).setMaxValue(0);
+        FlingAnimation flingAnimY = new FlingAnimation(mView, DynamicAnimation.TRANSLATION_Y)
+                // Sets the start velocity to -2000 (pixel/s)
+                .setStartVelocity(velocity.y*2000)
+                // Optional but recommended to set a reasonable min and max range for the animation.
+                // In this particular case, we set the min and max to -200 and 2000 respectively.
+                //.setMinValue(tl.y + tr.top).setMaxValue(rb.y + tr.bottom);
+                .setMinValue(-tr.height()).setMaxValue(0);
+
+        //flingAnimX.start();
+        flingAnimY.start();
 
     }
 
@@ -194,30 +231,6 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
 
     public boolean isContained(){
         return getTransformedRect().contains(getClippingRect());
-    }
-
-    public Matrix getRawViewMatrix(){
-        Matrix out = new Matrix();
-        //mView.setPivotX(0);
-        //mView.setPivotY(0);
-        out.preTranslate(-mView.getPivotX(), -mView.getPivotY());
-        out.postConcat(mView.getMatrix());
-        return out;
-/*
-        RectF mLayout = getContentRect();
-        Matrix m = new Matrix();
-        //m.preTranslate(mLayout.left, mLayout.top);
-
-        Matrix m1 = new Matrix();
-        RectF mapped = new RectF(mLayout);
-        mapped.offsetTo(0, 0);
-        mView.getMatrix().mapRect(mapped);
-        Log.d(TAG, "getAbsoluteMatrix: " + mapped);
-        m1.setRectToRect(mLayout, mapped, ScaleToFit.START);
-        //m.postConcat(getRawViewMatrix());
-        m.postConcat(m1);
-        return m;
-        */
     }
 
     public Matrix getAbsoluteMatrix(){
@@ -236,9 +249,15 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     }
 
     public RectF getTransformedRect(){
-        RectF src = new RectF(getContentRect());
+        return transformRect(getContentRect());
+    }
+
+    public RectF transformRect(Rect src) {
+        return transformRect(new RectF(src));
+    }
+
+    public RectF transformRect(RectF src){
         RectF dst = new RectF();
-        src.offsetTo(0, 0);
         getAbsoluteMatrix().mapRect(dst, src);
         return dst;
     }
@@ -296,16 +315,6 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         return clampScaleFactor(mScale, scaleBy);
     }
 
-    public void setScale(float scale, float focusX, float focusY, boolean animated){
-        postScale(scale / mScale, focusX, focusY);
-    }
-
-    public void postScale(ScaleGestureDetector detector){
-        float scaleBy = clampScaleFactor(detector.getScaleFactor());
-        PointF focal = getFocalPoint(detector.getFocusX(), detector.getFocusY());
-        postScale(scaleBy, focal.x, focal.y);
-    }
-
     public PointF getFocalPoint(float x, float y){
         PointF out = new PointF(x, y);
         if(!isContained()) {
@@ -318,6 +327,16 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
             }
         }
         return out;
+    }
+
+    public void setScale(float scale, float focusX, float focusY, boolean animated){
+        postScale(scale / mScale, focusX, focusY);
+    }
+
+    public void postScale(ScaleGestureDetector detector){
+        float scaleBy = clampScaleFactor(detector.getScaleFactor());
+        PointF focal = getFocalPoint(detector.getFocusX(), detector.getFocusY());
+        postScale(scaleBy, focal.x, focal.y);
     }
 
     public void postScale(float scaleBy, float focusX, float focusY){
@@ -376,14 +395,6 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         boolean scrollY = velocity.y == 0 ? true : velocity.y > 0 ? canOffset.top : canOffset.bottom;
 
         return Math.abs(velocity.x) > Math.abs(velocity.y) ? scrollX : scrollY;
-        /*
-        return new RectB(
-                mVelocity.x >= 0 && canOffset.left,
-                mVelocity.y >= 0 && canOffset.top,
-                mVelocity.x <= 0 && canOffset.right,
-                mVelocity.y <= 0 && canOffset.bottom
-        );
-        */
     }
 
     @Override
@@ -468,14 +479,14 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
     protected class MatrixAnimationBuilder {
         Matrix start;
         Matrix end;
-        boolean animated;
+        boolean animate;
 
         MatrixAnimationBuilder(){
             this(true);
         }
 
         MatrixAnimationBuilder(boolean animated){
-            this.animated = animated;
+            this.animate = animated;
             fillStart();
         }
 
@@ -488,7 +499,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
         }
 
         public void run(){
-            run(animated);
+            run(animate);
         }
 
         public void run(boolean animated){
@@ -496,6 +507,7 @@ public class MatrixManager extends Matrix implements IGesture.ScaleHelper, IGest
             if(end == null) end = MatrixManager.this;
             MatrixAnimation animation = new MatrixAnimation(start, end)
                     .setAnimated(animated);
+
             mView.getChildAt(0).startAnimation(animation);
         }
     }

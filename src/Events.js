@@ -16,7 +16,7 @@ UIManager.genericDirectEventTypes = {
     ...customEventsConfig,
 };
 
-/*
+
 // Wrap JS responder calls and notify gesture handler manager
 const {
     setJSResponder: oldSetJSResponder = () => { },
@@ -24,14 +24,15 @@ const {
     getConstants: oldGetConstants = () => ({}),
 } = UIManager;
 UIManager.setJSResponder = (tag, blockNativeResponder) => {
-    RNGestureHandlerModule.handleSetJSResponder(tag, blockNativeResponder);
+    //RNGestureHandlerModule.handleSetJSResponder(tag, blockNativeResponder);
+  console.log('hello mister')
     oldSetJSResponder(tag, blockNativeResponder);
 };
 UIManager.clearJSResponder = () => {
-    RNGestureHandlerModule.handleClearJSResponder();
+    //RNGestureHandlerModule.handleClearJSResponder();
     oldClearJSResponder();
 };
-*/
+
 
 
 // We also add GH specific events to the constants object returned by
