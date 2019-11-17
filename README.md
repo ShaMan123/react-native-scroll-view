@@ -1,3 +1,12 @@
+
+
+# This package is DEPRECATED
+
+
+
+
+
+
 # react-native-scroll-view
 A react-native component for android that mimics the react-native iOS `ScrollView`.
 
