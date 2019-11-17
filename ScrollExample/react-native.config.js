@@ -16,9 +16,6 @@ module.exports = {
         },
         ios: null
       },
-    },
-    'react-native-sketch-canvas': {
-      root: path.resolve(__dirname, '..', '../react-native-sketch-canvas')
     }
   },
 };

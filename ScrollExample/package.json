@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@react-native-community/viewpager": "^1.1.7",
+    "@terrylinla/react-native-sketch-canvas": "file:../../react-native-sketch-canvas",
     "react": "16.8.6",
     "react-native": "0.60.4",
     "react-native-gesture-handler": "^1.3.0"

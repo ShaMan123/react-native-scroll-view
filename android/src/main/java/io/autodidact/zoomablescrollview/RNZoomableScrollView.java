@@ -12,17 +12,23 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
 import com.facebook.react.ReactRootView;
+import com.facebook.react.uimanager.JSTouchDispatcher;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIManagerModule;
+import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.views.view.ReactViewGroup;
+import com.swmansion.gesturehandler.react.RNGestureHandlerEnabledRootView;
 
 import java.util.ArrayList;
 
-public class RNZoomableScrollView extends ViewGroup {
+public class RNZoomableScrollView extends ReactRootView {
     public static String TAG = RNZoomableScrollView.class.getSimpleName();
     private GestureManager mGestureManager;
     private ThemedReactContext mContext;
     private boolean mIsHorizontal = false;
     private float mTouchSlop;
+    JSTouchDispatcher touchDispatcher;
+    EventDispatcher eventDispatcher;
 
     RNZoomableScrollView(ThemedReactContext context){
         super(context);
@@ -30,6 +36,8 @@ public class RNZoomableScrollView extends ViewGroup {
         mGestureManager = new GestureManager(this);
         ViewConfiguration vc = ViewConfiguration.get(context);
         mTouchSlop = vc.getScaledTouchSlop();
+        touchDispatcher = new JSTouchDispatcher(this);
+        eventDispatcher = context.getNativeModule(UIManagerModule.class).getEventDispatcher();
         //setOverflow("hidden");
         //setRemoveClippedSubviews(false);
     }
@@ -62,6 +70,7 @@ public class RNZoomableScrollView extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
         mGestureManager.onLayout(changed, l, t, r, b);
     }
 
@@ -99,8 +108,11 @@ public class RNZoomableScrollView extends ViewGroup {
     private PointF mTouch = new PointF();
     private PointF mTotalTouch = new PointF();
 
+
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+
         Log.d(TAG, "dispatchTouchEvent: " + ev);
         int action = ev.getActionMasked();
         mTouch.set(ev.getX(), ev.getY());
@@ -142,19 +154,22 @@ public class RNZoomableScrollView extends ViewGroup {
             }
         }
 
-        return true;
+        //touchDispatcher.handleTouchEvent(ev, eventDispatcher);
+
+        return super.onInterceptTouchEvent(ev);
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent ev) {
+
         if(mInvertedEvent){
-            event.transform(getMatrix());
+            ev.transform(getMatrix());
             mInvertedEvent = false;
         }
-        mGestureManager.onTouchEvent(event);
+        mGestureManager.onTouchEvent(ev);
         //postInvalidateOnAnimation();
-
-        return true;
+        //touchDispatcher.handleTouchEvent(ev, eventDispatcher);
+        return super.onTouchEvent(ev);
         //return super.onTouchEvent(event);
     }
 

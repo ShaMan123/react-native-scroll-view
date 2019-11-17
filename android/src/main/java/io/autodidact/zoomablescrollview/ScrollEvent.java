@@ -9,6 +9,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.facebook.react.uimanager.events.TouchesHelper;
 import com.facebook.react.views.scroll.ScrollEventType;
 
 /** A event dispatched from a ScrollView scrolling. */
@@ -108,6 +109,10 @@ public class ScrollEvent extends Event<ScrollEvent> {
     @Override
     public void dispatch(RCTEventEmitter rctEventEmitter) {
         rctEventEmitter.receiveEvent(getViewTag(), getEventName(), serializeEventData());
+        /*
+        TouchesHelper.sendTouchEvent(
+                rctEventEmitter, Assertions.assertNotNull(mTouchEventType), getViewTag(), this);
+                */
     }
 
     protected WritableMap serializeEventData() {

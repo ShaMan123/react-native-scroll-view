@@ -6,13 +6,13 @@
 const path = require('path');
 
 module.exports = {
-    dependency: {
-        platforms: {
-            android: {
-                packageImportPath: "import io.autodidact.zoomablescrollview.RNZoomableScrollViewPackage;",
-                packageInstance: "new RNZoomableScrollViewPackage()"
-            },
-            ios: {}
-        },
+  dependency: {
+    platforms: {
+      android: {
+        packageImportPath: "import io.autodidact.zoomablescrollview.RNZoomableScrollViewPackage;",
+        packageInstance: "new RNZoomableScrollViewPackage()"
+      },
+      ios: {}
     }
+  }
 };

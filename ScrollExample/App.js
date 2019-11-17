@@ -11,7 +11,8 @@ import { Platform, StyleSheet, Text, View, Image, ScrollView as RNScrollView, An
 import ViewPager from '@react-native-community/viewpager';
 import { createNativeWrapper, RectButton } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
-//import { State, PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
+import { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+import { State, PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -71,7 +72,7 @@ export default class App extends Component<Props> {
 
   renderPage(index) {
     return (
-      <GHCV
+        <CustomView
         //pointerEvents="none"
         onHandlerStateChange={e => console.log(State.print(e.nativeEvent.state))}
         onGestureEvent={e => console.log(State.print(e.nativeEvent.state))}
@@ -84,10 +85,11 @@ export default class App extends Component<Props> {
         ref={this.scrollRefs[index]}
         onLayout={e => console.log('!!!!', e.nativeEvent)}
         onMomentumScrollBegin={e => console.log('!onMomentumBeginDrag!!!', e.nativeEvent)}
-        onScroll={(e) => console.log(e.nativeEvent)}
-        onScrollBeginDrag={(e) => console.log('begin', e.nativeEvent)}
-        onScrollEndDrag={(e) => console.log('end', e.nativeEvent)}
-        waitFor={this.rrrr}
+       // onScroll={(e) => console.log(e.nativeEvent)}
+        //onScrollBeginDrag={(e) => console.log('begin', e.nativeEvent)}
+        //onScrollEndDrag={(e) => console.log('end', e.nativeEvent)}
+            waitFor={this.rrrr}
+            //onTouchMove={(e) => console.log('onTouchMove', e.nativeEvent)}
       //centerContent
       >
         <Text style={[StyleSheet.absoluteFill, { zIndex: 1 }]}>{index + 1}</Text>
@@ -95,9 +97,9 @@ export default class App extends Component<Props> {
           title="test me"
           onPress={() => console.log('button press inside')}
           style={{ width: 360, height: 200, backgroundColor: 'pink' }}
-          enabled
+                
           disallowInterruption
-          //exclusive
+          exclusive
           ref={this.rrrr}
           shouldActivateOnStart
           onHandlerStateChange={(e) => console.log('button press inside', e.nativeEvent)}
@@ -107,6 +109,7 @@ export default class App extends Component<Props> {
         <Button
           title="test me"
           onPress={() => console.log('button press inside')}
+
         />
         {this.state.add && <Text>Added View</Text>}
         <Image
@@ -127,7 +130,7 @@ export default class App extends Component<Props> {
           style={{ width: 300, height: 300 }}
           source={{ uri: 'https://cdn.lynda.com/course/483230/483230-636529267515404332-16x9.jpg', width: 300, height: 300 }}
         />
-      </GHCV>
+        </CustomView>
 
     );
   }
